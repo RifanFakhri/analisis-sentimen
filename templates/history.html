@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+{% block title %}Histori Prediksi{% endblock %}
+
+{% block content %}
+<section class="section" id="history-section">
+    <div class="container">
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">
+                    <i class="fas fa-history"></i>
+                    Histori <span class="gradient-text">Prediksi</span>
+                </h1>
+                <p class="page-desc">Riwayat semua prediksi sentimen yang telah dilakukan</p>
+            </div>
+            <button class="btn btn-danger" id="btn-clear-all" onclick="clearAllHistory()">
+                <i class="fas fa-trash-alt"></i>
+                <span>Hapus Semua</span>
+            </button>
+        </div>
+
+        <!-- Filters -->
+        <div class="filter-bar glass-card" id="filter-bar">
+            <div class="search-wrapper">
+                <i class="fas fa-search search-icon"></i>
+                <input
+                    type="text"
+                    class="search-input"
+                    id="search-input"
+                    placeholder="Cari teks ulasan..."
+                    oninput="debounceSearch()"
+                >
+            </div>
+            <div class="filter-buttons">
+                <button class="filter-btn active" data-filter="" onclick="filterSentiment(this, '')">
+                    <i class="fas fa-list"></i> Semua
+                </button>
+                <button class="filter-btn" data-filter="positif" onclick="filterSentiment(this, 'positif')">
+                    <i class="fas fa-smile"></i> Positif
+                </button>
+                <button class="filter-btn" data-filter="netral" onclick="filterSentiment(this, 'netral')">
+                    <i class="fas fa-meh"></i> Netral
+                </button>
+                <button class="filter-btn" data-filter="negatif" onclick="filterSentiment(this, 'negatif')">
+                    <i class="fas fa-frown"></i> Negatif
+                </button>
+            </div>
+        </div>
+
+        <!-- History Table -->
+        <div class="table-card glass-card" id="table-card">
+            <div class="table-wrapper">
+                <table class="data-table" id="history-table">
+                    <thead>
+                        <tr>
+                            <th>No</th>
+                            <th>Teks Ulasan</th>
+                            <th>Sentimen</th>
+                            <th>Confidence</th>
+                            <th>Tanggal</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="history-tbody">
+                        <!-- Dynamically loaded -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Empty State -->
+            <div class="empty-state hidden" id="empty-state">
+                <div class="empty-icon">
+                    <i class="fas fa-inbox"></i>
+                </div>
+                <h3>Belum Ada Data</h3>
+                <p>Belum ada histori prediksi. Mulai analisis sentimen untuk melihat hasilnya di sini.</p>
+                <a href="/" class="btn btn-primary">
+                    <i class="fas fa-magic"></i> Mulai Prediksi
+                </a>
+            </div>
+
+            <!-- Loading State -->
+            <div class="table-loading hidden" id="table-loading">
+                <div class="loader">
+                    <div class="loader-ring"></div>
+                    <div class="loader-ring"></div>
+                    <div class="loader-ring"></div>
+                </div>
+                <p>Memuat data...</p>
+            </div>
+
+            <!-- Pagination -->
+            <div class="pagination" id="pagination">
+                <!-- Dynamically generated -->
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/history.js') }}"></script>
+{% endblock %}

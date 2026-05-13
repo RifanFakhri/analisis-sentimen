@@ -1,0 +1,202 @@
+{% extends "base.html" %}
+{% block title %}Training Model{% endblock %}
+
+{% block content %}
+<section class="section" id="train-section">
+    <div class="container">
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">
+                    <i class="fas fa-cogs"></i>
+                    Training <span class="gradient-text">Model</span>
+                </h1>
+                <p class="page-desc">Kelola data training dan latih model Multinomial Naive Bayes</p>
+            </div>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="stats-grid" id="stats-grid">
+            <div class="stat-card glass-card">
+                <div class="stat-icon stat-icon-total">
+                    <i class="fas fa-database"></i>
+                </div>
+                <div class="stat-info">
+                    <span class="stat-value" id="stat-total">{{ total_data }}</span>
+                    <span class="stat-label">Total Data</span>
+                </div>
+            </div>
+            <div class="stat-card glass-card">
+                <div class="stat-icon stat-icon-positif">
+                    <i class="fas fa-smile"></i>
+                </div>
+                <div class="stat-info">
+                    <span class="stat-value" id="stat-positif">{{ label_stats.get('positif', 0) }}</span>
+                    <span class="stat-label">Positif</span>
+                </div>
+            </div>
+            <div class="stat-card glass-card">
+                <div class="stat-icon stat-icon-netral">
+                    <i class="fas fa-meh"></i>
+                </div>
+                <div class="stat-info">
+                    <span class="stat-value" id="stat-netral">{{ label_stats.get('netral', 0) }}</span>
+                    <span class="stat-label">Netral</span>
+                </div>
+            </div>
+            <div class="stat-card glass-card">
+                <div class="stat-icon stat-icon-negatif">
+                    <i class="fas fa-frown"></i>
+                </div>
+                <div class="stat-info">
+                    <span class="stat-value" id="stat-negatif">{{ label_stats.get('negatif', 0) }}</span>
+                    <span class="stat-label">Negatif</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="train-grid">
+            <!-- Add Training Data -->
+            <div class="train-card glass-card" id="add-data-card">
+                <div class="card-header">
+                    <div class="card-icon">
+                        <i class="fas fa-plus-circle"></i>
+                    </div>
+                    <div>
+                        <h2 class="card-title">Tambah Data Training</h2>
+                        <p class="card-desc">Tambahkan data teks dan label sentimen</p>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="training-text" class="form-label">Teks Ulasan</label>
+                    <textarea
+                        id="training-text"
+                        class="text-input"
+                        placeholder="Masukkan teks ulasan..."
+                        rows="3"
+                    ></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Label Sentimen</label>
+                    <div class="label-selector" id="label-selector">
+                        <button class="label-btn label-positif" data-label="positif" onclick="selectLabel(this)">
+                            <i class="fas fa-smile"></i> Positif
+                        </button>
+                        <button class="label-btn label-netral" data-label="netral" onclick="selectLabel(this)">
+                            <i class="fas fa-meh"></i> Netral
+                        </button>
+                        <button class="label-btn label-negatif" data-label="negatif" onclick="selectLabel(this)">
+                            <i class="fas fa-frown"></i> Negatif
+                        </button>
+                    </div>
+                </div>
+
+                <button class="btn btn-primary btn-full" id="btn-add-data" onclick="addTrainingData()">
+                    <i class="fas fa-plus"></i>
+                    <span>Tambah Data</span>
+                </button>
+            </div>
+
+            <!-- Train Model -->
+            <div class="train-card glass-card" id="train-model-card">
+                <div class="card-header">
+                    <div class="card-icon">
+                        <i class="fas fa-rocket"></i>
+                    </div>
+                    <div>
+                        <h2 class="card-title">Latih Model</h2>
+                        <p class="card-desc">Jalankan training dengan Multinomial Naive Bayes</p>
+                    </div>
+                </div>
+
+                <div class="model-info-box" id="model-info-box">
+                    <div class="info-row">
+                        <span class="info-label">Algoritma</span>
+                        <span class="info-value">Multinomial Naive Bayes</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Vectorizer</span>
+                        <span class="info-value">TF-IDF (5000 features)</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Status</span>
+                        <span class="info-value">
+                            {% if model_info.is_trained %}
+                                <span class="badge badge-success">Trained</span>
+                            {% else %}
+                                <span class="badge badge-warning">Not Trained</span>
+                            {% endif %}
+                        </span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Test Split</span>
+                        <span class="info-value">20%</span>
+                    </div>
+                </div>
+
+                <button class="btn btn-accent btn-full" id="btn-train" onclick="trainModel()">
+                    <i class="fas fa-play"></i>
+                    <span>Mulai Training</span>
+                </button>
+
+                <!-- Training Progress -->
+                <div class="training-progress hidden" id="training-progress">
+                    <div class="loader">
+                        <div class="loader-ring"></div>
+                        <div class="loader-ring"></div>
+                        <div class="loader-ring"></div>
+                    </div>
+                    <p class="loading-text">Melatih model...</p>
+                    <p class="loading-sub">Proses ini mungkin memerlukan waktu beberapa saat</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Training Results -->
+        <div class="result-section hidden" id="training-results">
+            <div class="result-card glass-card">
+                <div class="card-header">
+                    <div class="card-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <div>
+                        <h2 class="card-title">Hasil Training</h2>
+                        <p class="card-desc">Metrik evaluasi model</p>
+                    </div>
+                </div>
+
+                <div class="metrics-grid" id="metrics-grid">
+                    <!-- Accuracy -->
+                    <div class="metric-card">
+                        <div class="metric-ring" id="accuracy-ring">
+                            <svg viewBox="0 0 120 120" class="confidence-svg">
+                                <circle cx="60" cy="60" r="54" class="confidence-bg"></circle>
+                                <circle cx="60" cy="60" r="54" class="confidence-fill accuracy-fill" id="accuracy-fill"></circle>
+                            </svg>
+                            <div class="confidence-value" id="accuracy-value">0%</div>
+                        </div>
+                        <span class="metric-label">Akurasi</span>
+                    </div>
+
+                    <div class="metric-details" id="metric-details">
+                        <!-- Classification report will be inserted here -->
+                    </div>
+                </div>
+
+                <!-- Confusion Matrix -->
+                <div class="confusion-section" id="confusion-section">
+                    <h3 class="section-subtitle">Confusion Matrix</h3>
+                    <div class="confusion-matrix" id="confusion-matrix">
+                        <!-- Dynamically generated -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/train.js') }}"></script>
+{% endblock %}

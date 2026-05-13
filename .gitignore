@@ -1,0 +1,35 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg-info/
+dist/
+build/
+
+# Environments
+.env
+.venv
+venv/
+env/
+
+# ML Models
+*.pkl
+*.joblib
+model/
+!model/.gitkeep
+
+# Data & Database
+instance/
+*.db
+*.sqlite3
+dataset/
+
+# Development
+scratch/
+.idea/
+.vscode/
+.DS_Store
+
+# Temporary
+*.log

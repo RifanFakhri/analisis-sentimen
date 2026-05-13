@@ -1,0 +1,391 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard Visualisasi{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --card-bg: rgba(255, 255, 255, 0.05);
+        --card-border: rgba(255, 255, 255, 0.1);
+        --glass-bg: rgba(255, 255, 255, 0.03);
+    }
+
+    .dashboard-container {
+        display: flex;
+        flex-direction: column;
+        gap: 3rem;
+        padding-bottom: 5rem;
+    }
+
+    .section-title {
+        font-size: 1.75rem;
+        font-weight: 800;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        color: var(--text-primary);
+    }
+
+    .section-title i {
+        width: 50px;
+        height: 50px;
+        background: var(--primary-color);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 12px;
+        font-size: 1.25rem;
+        color: white;
+        box-shadow: 0 8px 16px rgba(124, 58, 237, 0.3);
+    }
+
+    .section-subtitle {
+        color: var(--text-secondary);
+        font-size: 1rem;
+        margin-top: -1rem;
+        margin-bottom: 2rem;
+        margin-left: 60px;
+    }
+
+    /* Section 1: Dataset Table */
+    .dataset-table-card {
+        background: var(--card-bg);
+        border: 1px solid var(--card-border);
+        border-radius: 1.5rem;
+        overflow: hidden;
+        backdrop-filter: blur(10px);
+    }
+
+    .dataset-table {
+        width: 100%;
+        border-collapse: collapse;
+        text-align: left;
+    }
+
+    .dataset-table th {
+        background: rgba(255, 255, 255, 0.08);
+        padding: 1.25rem 1.5rem;
+        font-size: 0.85rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--text-secondary);
+    }
+
+    .dataset-table td {
+        padding: 1.25rem 1.5rem;
+        border-bottom: 1px solid var(--card-border);
+        font-size: 0.95rem;
+    }
+
+    .dataset-table tr:hover {
+        background: rgba(255, 255, 255, 0.02);
+    }
+
+    .badge-sentiment {
+        padding: 0.4rem 0.8rem;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-transform: capitalize;
+    }
+
+    .badge-positif { background: rgba(16, 185, 129, 0.2); color: #10b981; }
+    .badge-negatif { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
+    .badge-netral { background: rgba(107, 114, 128, 0.2); color: #9ca3af; }
+
+    /* Section 2: Charts Grid */
+    .charts-grid {
+        display: grid;
+        grid-template-columns: 1.5fr 1fr;
+        gap: 1.5rem;
+    }
+
+    .chart-card {
+        background: var(--card-bg);
+        border: 1px solid var(--card-border);
+        border-radius: 1.5rem;
+        padding: 2rem;
+        position: relative;
+    }
+
+    .chart-header {
+        margin-bottom: 2rem;
+        font-size: 1.25rem;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .chart-container {
+        height: 350px;
+        width: 100%;
+    }
+
+    /* Section 3: Complaint Analysis */
+    .complaints-grid {
+        display: grid;
+        grid-template-columns: 1fr 2fr;
+        gap: 1.5rem;
+    }
+
+    .keywords-card {
+        background: #f8fafc;
+        border-radius: 1.5rem;
+        overflow: hidden;
+    }
+
+    .keywords-header {
+        background: #ef4444;
+        color: white;
+        padding: 1.25rem 1.5rem;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .keyword-list {
+        padding: 1rem 0;
+    }
+
+    .keyword-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.85rem 1.5rem;
+        border-bottom: 1px solid #e2e8f0;
+        color: #1e293b;
+    }
+
+    .keyword-item:last-child { border-bottom: none; }
+
+    .keyword-name { font-weight: 500; }
+    .keyword-count { 
+        background: #fee2e2; 
+        color: #ef4444; 
+        padding: 0.2rem 0.6rem; 
+        border-radius: 6px; 
+        font-size: 0.85rem;
+        font-weight: 700;
+    }
+
+    .samples-card {
+        background: white;
+        border: 1px solid #e2e8f0;
+        border-radius: 1.5rem;
+        padding: 2rem;
+    }
+
+    .sample-item {
+        padding: 1.25rem;
+        background: #fff5f5;
+        border: 1px solid #fee2e2;
+        border-left: 4px solid #ef4444;
+        border-radius: 0.75rem;
+        margin-bottom: 1rem;
+        color: #475569;
+        font-style: italic;
+        position: relative;
+    }
+
+    .sample-icon {
+        position: absolute;
+        left: -15px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: #ef4444;
+        color: white;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.8rem;
+    }
+
+    /* Section 4: Summary & Recommendation */
+    .summary-cards {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .sum-card {
+        padding: 2.5rem 2rem;
+        border-radius: 1.5rem;
+        text-align: center;
+        color: white;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .sum-card i {
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+        opacity: 0.6;
+    }
+
+    .sum-value { font-size: 3rem; font-weight: 900; margin-bottom: 0.5rem; }
+    .sum-label { font-size: 0.9rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; opacity: 0.8; }
+
+    .card-blue { background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); }
+    .card-red { background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); }
+    .card-yellow { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
+
+    .recommendation-box {
+        background: white;
+        border-radius: 1.5rem;
+        padding: 2.5rem;
+        border: 1px solid #e2e8f0;
+    }
+
+    .rec-title { font-size: 1.25rem; font-weight: 700; margin-bottom: 1.5rem; color: #1e293b; display: flex; align-items: center; gap: 0.75rem; }
+    .rec-title i { color: #3b82f6; }
+
+    .rec-item { margin-bottom: 1.5rem; }
+    .rec-heading { font-weight: 700; color: #334155; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem; }
+    .rec-text { color: #64748b; line-height: 1.6; }
+
+    @media (max-width: 1024px) {
+        .charts-grid, .complaints-grid, .summary-cards { grid-template-columns: 1fr; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container dashboard-container">
+    
+    <!-- Section 1: Dataset -->
+    <section>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+            <div>
+                <h1 class="section-title" style="margin-bottom: 0;"><i><i class="fas fa-database"></i></i> Dataset Ulasan</h1>
+                <p class="section-subtitle" style="margin-bottom: 0;">Data mentah hasil crawling ulasan wisatawan Pulau Merak.</p>
+            </div>
+            <div class="filter-group">
+                <select id="dataset-sentiment-filter" class="form-select" style="padding: 0.75rem 1.5rem; border-radius: 12px; background: rgba(255,255,255,0.05); color: white; border: 1px solid rgba(255,255,255,0.1); cursor: pointer; outline: none;">
+                    <option value="all" style="background: #1e293b; color: white;">Semua Sentimen</option>
+                    <option value="positif" style="background: #1e293b; color: white;">Positif</option>
+                    <option value="netral" style="background: #1e293b; color: white;">Netral</option>
+                    <option value="negatif" style="background: #1e293b; color: white;">Negatif</option>
+                </select>
+            </div>
+        </div>
+        
+        <div class="dataset-table-card">
+            <table class="dataset-table">
+                <thead>
+                    <tr>
+                        <th>Tahun</th>
+                        <th>Rating</th>
+                        <th>Sentimen</th>
+                        <th>Ulasan</th>
+                    </tr>
+                </thead>
+                <tbody id="dataset-tbody">
+                    <!-- Data will be loaded via JS -->
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <!-- Section 2: Trends -->
+    <section>
+        <h1 class="section-title"><i><i class="fas fa-chart-line"></i></i> Analisis Tren Sentimen</h1>
+        <p class="section-subtitle">Visualisasi distribusi sentimen ulasan berdasarkan tahun.</p>
+        
+        <div class="charts-grid">
+            <div class="chart-card">
+                <div class="chart-header">Tren Sentimen per Tahun (2023 - 2026)</div>
+                <div class="chart-container">
+                    <canvas id="trendChart"></canvas>
+                </div>
+            </div>
+            <div class="chart-card">
+                <div class="chart-header"><i class="fas fa-circle-check" style="color: #3b82f6;"></i> Distribusi Total</div>
+                <div class="chart-container">
+                    <canvas id="distributionChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section 3: Complaints -->
+    <section>
+        <h1 class="section-title" style="color: #ef4444;"><i><i class="fas fa-triangle-exclamation"></i></i> Analisis Keluhan Pengguna</h1>
+        <p class="section-subtitle">Identifikasi masalah utama yang dihadapi oleh wisatawan.</p>
+        
+        <div class="complaints-grid">
+            <div class="keywords-card">
+                <div class="keywords-header">
+                    <i class="fas fa-key"></i> Top 10 Kata Kunci Negatif
+                </div>
+                <div class="keyword-list" id="neg-keywords-list">
+                    <!-- Loaded via JS -->
+                </div>
+            </div>
+            <div class="samples-card">
+                <div class="rec-title"><i class="fas fa-quote-left"></i> Sampel Ulasan Negatif</div>
+                <div id="neg-samples-list">
+                    <!-- Loaded via JS -->
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section 4: Conclusion -->
+    <section>
+        <h1 class="section-title" style="color: #3b82f6;"><i><i class="fas fa-check-double"></i></i> Kesimpulan & Rekomendasi</h1>
+        <p class="section-subtitle">Ringkasan temuan utama dan saran strategis bagi pengelola.</p>
+        
+        <div class="summary-cards">
+            <div class="sum-card card-blue">
+                <i class="fas fa-comments"></i>
+                <div class="sum-value" id="sum-total">0</div>
+                <div class="sum-label">Total Ulasan</div>
+            </div>
+            <div class="sum-card card-red">
+                <i class="fas fa-face-frown"></i>
+                <div class="sum-value" id="sum-neg">0%</div>
+                <div class="sum-label">Persentase Negatif</div>
+            </div>
+            <div class="sum-card card-yellow">
+                <i class="fas fa-calendar-xmark"></i>
+                <div class="sum-value" id="sum-worst">0</div>
+                <div class="sum-label">Tahun Terburuk</div>
+            </div>
+        </div>
+
+        <div class="recommendation-box">
+            <div class="rec-title"><i class="fas fa-lightbulb"></i> Analisis & Saran</div>
+            
+            <div class="rec-item">
+                <div class="rec-heading"><i class="fas fa-magnifying-glass"></i> Kesimpulan</div>
+                <div class="rec-text" id="summary-text">
+                    Memproses data...
+                </div>
+            </div>
+
+            <div class="rec-item">
+                <div class="rec-heading"><i class="fas fa-rocket"></i> Saran Pengembangan</div>
+                <ul class="rec-text" id="suggestion-list" style="padding-left: 1.5rem;">
+                    <li>Meningkatkan kebersihan area pantai terutama dari sampah plastik.</li>
+                    <li>Memperbaiki fasilitas umum seperti toilet dan mushola.</li>
+                    <li>Menambah variasi pedagang makanan dan minuman di area pulau.</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,11 @@
+Flask==3.1.1
+Flask-SQLAlchemy==3.1.1
+psycopg2-binary==2.9.10
+scikit-learn==1.6.1
+pandas==2.2.3
+numpy==2.2.5
+joblib==1.4.2
+Sastrawi==1.0.1
+nltk==3.9.1
+gunicorn==23.0.0
+python-dotenv==1.1.0

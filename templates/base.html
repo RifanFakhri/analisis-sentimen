@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Sistem Analisis Sentimen berbasis Multinomial Naive Bayes untuk ulasan Bahasa Indonesia">
+    <title>{% block title %}Sentiment Analysis{% endblock %} | MNB Analyzer</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar" id="main-navbar">
+        <div class="nav-container">
+            <a href="/" class="nav-brand" id="nav-brand">
+                <div class="brand-icon">
+                    <i class="fas fa-brain"></i>
+                </div>
+                <span class="brand-text">Sentiment<span class="brand-accent">AI</span></span>
+            </a>
+            <div class="nav-links" id="nav-links">
+                <a href="/" class="nav-link {% if request.endpoint == 'main.index' %}active{% endif %}" id="nav-predict">
+                    <i class="fas fa-magic"></i>
+                    <span>Prediksi</span>
+                </a>
+                <a href="/history" class="nav-link {% if request.endpoint == 'main.history' %}active{% endif %}" id="nav-history">
+                    <i class="fas fa-history"></i>
+                    <span>Histori</span>
+                </a>
+                <a href="/dashboard" class="nav-link {% if request.endpoint == 'main.dashboard' %}active{% endif %}" id="nav-dashboard">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="/train" class="nav-link {% if request.endpoint == 'main.train_page' %}active{% endif %}" id="nav-train">
+                    <i class="fas fa-cogs"></i>
+                    <span>Training</span>
+                </a>
+            </div>
+            <div class="nav-status">
+                <div class="status-dot {% if model_info.is_trained %}status-active{% else %}status-inactive{% endif %}" id="model-status-dot"></div>
+                <span class="status-text" id="model-status-text">
+                    {% if model_info.is_trained %}Model Ready{% else %}Model Not Trained{% endif %}
+                </span>
+            </div>
+            <button class="nav-toggle" id="nav-toggle" aria-label="Toggle navigation">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-container">
+            <div class="footer-content">
+                <p class="footer-text">
+                    <i class="fas fa-brain footer-icon"></i>
+                    Sentiment Analysis &mdash; Multinomial Naive Bayes
+                </p>
+                <p class="footer-sub">Built with Flask & scikit-learn</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>
