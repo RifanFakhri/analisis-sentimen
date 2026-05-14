@@ -7,113 +7,74 @@
         <div class="page-header">
             <div>
                 <h1 class="page-title">
-                    <i class="fas fa-cogs"></i>
-                    Training <span class="gradient-text">Model</span>
+                    <i class="fas fa-microchip"></i>
+                    Training <span class="gradient-text">Engine</span>
                 </h1>
-                <p class="page-desc">Kelola data training dan latih model Multinomial Naive Bayes</p>
+                <p class="page-desc">Konfigurasi dataset dan latih kecerdasan buatan Complement Naive Bayes</p>
             </div>
         </div>
 
         <!-- Stats Cards -->
         <div class="stats-grid" id="stats-grid">
-            <div class="stat-card glass-card">
+            <!-- Total Data -->
+            <div class="stat-card glass-card stat-card-total">
                 <div class="stat-icon stat-icon-total">
                     <i class="fas fa-database"></i>
                 </div>
                 <div class="stat-info">
+                    <span class="stat-label">Total Dataset</span>
                     <span class="stat-value" id="stat-total">{{ total_data }}</span>
-                    <span class="stat-label">Total Data</span>
                 </div>
             </div>
-            <div class="stat-card glass-card">
+            <!-- Positif -->
+            <div class="stat-card glass-card stat-card-positif">
                 <div class="stat-icon stat-icon-positif">
-                    <i class="fas fa-smile"></i>
+                    <i class="fas fa-check-circle"></i>
                 </div>
                 <div class="stat-info">
+                    <span class="stat-label">Sentimen Positif</span>
                     <span class="stat-value" id="stat-positif">{{ label_stats.get('positif', 0) }}</span>
-                    <span class="stat-label">Positif</span>
                 </div>
             </div>
-            <div class="stat-card glass-card">
+            <!-- Netral -->
+            <div class="stat-card glass-card stat-card-netral">
                 <div class="stat-icon stat-icon-netral">
-                    <i class="fas fa-meh"></i>
+                    <i class="fas fa-dot-circle"></i>
                 </div>
                 <div class="stat-info">
+                    <span class="stat-label">Sentimen Netral</span>
                     <span class="stat-value" id="stat-netral">{{ label_stats.get('netral', 0) }}</span>
-                    <span class="stat-label">Netral</span>
                 </div>
             </div>
-            <div class="stat-card glass-card">
+            <!-- Negatif -->
+            <div class="stat-card glass-card stat-card-negatif">
                 <div class="stat-icon stat-icon-negatif">
-                    <i class="fas fa-frown"></i>
+                    <i class="fas fa-times-circle"></i>
                 </div>
                 <div class="stat-info">
+                    <span class="stat-label">Sentimen Negatif</span>
                     <span class="stat-value" id="stat-negatif">{{ label_stats.get('negatif', 0) }}</span>
-                    <span class="stat-label">Negatif</span>
                 </div>
             </div>
         </div>
 
         <div class="train-grid">
-            <!-- Add Training Data -->
-            <div class="train-card glass-card" id="add-data-card">
-                <div class="card-header">
-                    <div class="card-icon">
-                        <i class="fas fa-plus-circle"></i>
-                    </div>
-                    <div>
-                        <h2 class="card-title">Tambah Data Training</h2>
-                        <p class="card-desc">Tambahkan data teks dan label sentimen</p>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label for="training-text" class="form-label">Teks Ulasan</label>
-                    <textarea
-                        id="training-text"
-                        class="text-input"
-                        placeholder="Masukkan teks ulasan..."
-                        rows="3"
-                    ></textarea>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">Label Sentimen</label>
-                    <div class="label-selector" id="label-selector">
-                        <button class="label-btn label-positif" data-label="positif" onclick="selectLabel(this)">
-                            <i class="fas fa-smile"></i> Positif
-                        </button>
-                        <button class="label-btn label-netral" data-label="netral" onclick="selectLabel(this)">
-                            <i class="fas fa-meh"></i> Netral
-                        </button>
-                        <button class="label-btn label-negatif" data-label="negatif" onclick="selectLabel(this)">
-                            <i class="fas fa-frown"></i> Negatif
-                        </button>
-                    </div>
-                </div>
-
-                <button class="btn btn-primary btn-full" id="btn-add-data" onclick="addTrainingData()">
-                    <i class="fas fa-plus"></i>
-                    <span>Tambah Data</span>
-                </button>
-            </div>
-
             <!-- Train Model -->
             <div class="train-card glass-card" id="train-model-card">
                 <div class="card-header">
-                    <div class="card-icon">
-                        <i class="fas fa-rocket"></i>
+                    <div class="card-icon" style="background: var(--accent-gradient);">
+                        <i class="fas fa-brain"></i>
                     </div>
                     <div>
-                        <h2 class="card-title">Latih Model</h2>
-                        <p class="card-desc">Jalankan training dengan Multinomial Naive Bayes</p>
+                        <h2 class="card-title">Kecerdasan Buatan</h2>
+                        <p class="card-desc">Latih model menggunakan metode Complement Naive Bayes</p>
                     </div>
                 </div>
 
                 <div class="model-info-box" id="model-info-box">
                     <div class="info-row">
-                        <span class="info-label">Algoritma</span>
-                        <span class="info-value">Multinomial Naive Bayes</span>
+                        <span class="info-label">Arsitektur Model</span>
+                        <span class="info-value">Complement Naive Bayes</span>
                     </div>
                     <div class="info-row">
                         <span class="info-label">Vectorizer</span>
@@ -192,6 +153,46 @@
                     </div>
                 </div>
             </div>
+        </div>
+        <!-- Training History / Logs (NEW) -->
+        <div class="train-card glass-card mt-4" style="width: 100%; max-width: 100%;">
+            <div class="card-header">
+                <div class="card-icon" style="background: var(--primary-gradient);">
+                    <i class="fas fa-history"></i>
+                </div>
+                <div>
+                    <h2 class="card-title">Riwayat Aktivitas</h2>
+                    <p class="card-desc">Log upload dataset dan sesi training model</p>
+                </div>
+            </div>
+            
+            <div class="table-container mt-3">
+                <table class="history-table">
+                    <thead>
+                        <tr>
+                            <th>Waktu</th>
+                            <th>Aktivitas</th>
+                            <th>Detail</th>
+                        </tr>
+                    </thead>
+                    <tbody id="training-logs-body">
+                        <tr>
+                            <td colspan="3" style="text-align: center; padding: 2rem; color: var(--text-muted);">
+                                Memuat riwayat...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- Reset System (NEW) -->
+        <div style="margin-top: 3rem; text-align: center; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 2rem;">
+            <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1rem;">Gunakan tombol di bawah untuk menghapus seluruh data dan model (reset ke awal).</p>
+            <button class="btn btn-danger" style="background: linear-gradient(135deg, #ef4444, #991b1b); border: none; padding: 0.75rem 2rem;" onclick="resetSystem()">
+                <i class="fas fa-trash-alt"></i>
+                <span>Reset Seluruh Sistem</span>
+            </button>
         </div>
     </div>
 </section>

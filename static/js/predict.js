@@ -7,6 +7,51 @@ if (inputText) {
     });
 }
 
+// ===== CSV Upload Logic =====
+let selectedFile = null;
+
+function handleFileSelect(input) {
+    if (input.files && input.files[0]) {
+        selectedFile = input.files[0];
+        document.getElementById('file-name').textContent = selectedFile.name;
+        document.getElementById('btn-upload').classList.remove('hidden');
+        document.getElementById('upload-area').style.borderColor = 'var(--accent-color)';
+    }
+}
+
+async function uploadCSV() {
+    if (!selectedFile) return;
+
+    const btn = document.getElementById('btn-upload');
+    const originalText = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memproses...';
+
+    const formData = new FormData();
+    formData.append('file', selectedFile);
+
+    try {
+        const response = await fetch('/api/upload-dataset', {
+            method: 'POST',
+            body: formData
+        });
+        const data = await response.json();
+
+        if (data.success) {
+            showToast(data.message);
+            // Reload after short delay to update model status in template
+            setTimeout(() => window.location.reload(), 1500);
+        } else {
+            showToast(data.error || 'Gagal mengupload dataset.', 'error');
+        }
+    } catch (err) {
+        showToast('Terjadi kesalahan koneksi.', 'error');
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+    }
+}
+
 // ===== Predict Sentiment =====
 async function predictSentiment() {
     const text = document.getElementById('input-text').value.trim();

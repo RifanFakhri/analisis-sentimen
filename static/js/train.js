@@ -1,30 +1,3 @@
-// ===== Label Selection =====
-let selectedLabel = '';
-
-function selectLabel(btn) {
-    document.querySelectorAll('.label-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    selectedLabel = btn.dataset.label;
-}
-
-// ===== Add Training Data =====
-async function addTrainingData() {
-    const text = document.getElementById('training-text').value.trim();
-    if (!text) { showToast('Masukkan teks ulasan.', 'error'); return; }
-    if (!selectedLabel) { showToast('Pilih label sentimen.', 'error'); return; }
-
-    try {
-        await apiFetch('/api/training-data', {
-            method: 'POST',
-            body: JSON.stringify({ text, label: selectedLabel }),
-        });
-        showToast('Data training berhasil ditambahkan!');
-        document.getElementById('training-text').value = '';
-        document.querySelectorAll('.label-btn').forEach(b => b.classList.remove('active'));
-        selectedLabel = '';
-        updateStats();
-    } catch (err) { showToast(err.message, 'error'); }
-}
 
 // ===== Train Model =====
 async function trainModel() {
@@ -119,4 +92,89 @@ async function updateStats() {
             if (el) document.getElementById(id).textContent = el.textContent;
         });
     } catch (e) { /* silent */ }
+}
+
+// ===== Training Logs =====
+async function loadTrainingLogs() {
+    const body = document.getElementById('training-logs-body');
+    if (!body) return;
+
+    try {
+        const response = await fetch('/api/training-logs');
+        const logs = await response.json();
+
+        if (logs.length === 0) {
+            body.innerHTML = `<tr><td colspan="3" style="text-align: center; padding: 2rem; color: var(--text-muted);">Belum ada riwayat aktivitas.</td></tr>`;
+            return;
+        }
+
+        body.innerHTML = logs.map(log => `
+            <tr>
+                <td style="white-space: nowrap; font-size: 0.85rem;">${log.created_at}</td>
+                <td>
+                    <span class="badge badge-${log.activity_type === 'upload' ? 'warning' : 'success'}">
+                        ${log.activity_type.toUpperCase()}
+                    </span>
+                </td>
+                <td style="font-size: 0.9rem;">${log.details}</td>
+            </tr>
+        `).join('');
+    } catch (err) {
+        body.innerHTML = `<tr><td colspan="3" style="text-align: center; color: var(--danger-color);">Gagal memuat riwayat.</td></tr>`;
+    }
+}
+
+// Initialize
+document.addEventListener('DOMContentLoaded', () => {
+    loadTrainingLogs();
+});
+
+// Update trainModel to refresh logs
+const originalTrainModel = trainModel;
+trainModel = async function() {
+    await originalTrainModel();
+    loadTrainingLogs();
+};
+// ===== Reset System =====
+async function resetSystem() {
+    const result = await Swal.fire({
+        title: 'Apakah Anda yakin?',
+        text: "Seluruh data training, riwayat, dan model akan dihapus secara permanen!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#ef4444',
+        cancelButtonColor: '#475569',
+        confirmButtonText: 'Ya, Reset Sekarang!',
+        cancelButtonText: 'Batal',
+        background: '#1e293b',
+        color: '#fff'
+    });
+
+    if (result.isConfirmed) {
+        try {
+            Swal.fire({
+                title: 'Sedang Mereset...',
+                allowOutsideClick: false,
+                didOpen: () => { Swal.showLoading(); }
+            });
+
+            const res = await fetch('/api/reset', { method: 'POST' });
+            const data = await res.json();
+            
+            if (res.ok) {
+                await Swal.fire({
+                    icon: 'success',
+                    title: 'Berhasil!',
+                    text: data.message,
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+                window.location.reload();
+            } else {
+                Swal.fire('Gagal!', data.error || 'Gagal meriset sistem', 'error');
+            }
+        } catch (err) {
+            Swal.fire('Error!', 'Terjadi kesalahan koneksi', 'error');
+        }
+    }
 }

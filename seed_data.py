@@ -8,43 +8,67 @@ from models import db, TrainingData
 from app import create_app
 import re
 
-def map_rating_to_sentiment(rating_str):
-    if not isinstance(rating_str, str):
-        return 'netral', 3
+def map_rating_to_sentiment(rating_input):
+    if isinstance(rating_input, (int, float)):
+        val = int(rating_input)
+    elif isinstance(rating_input, str):
+        try:
+            val = int(rating_input.split()[0])
+        except (ValueError, IndexError):
+            val = 3
+    else:
+        val = 3
     
-    rating_val = rating_str.split()[0]
-    try:
-        val = int(rating_val)
-        if val >= 4:
-            return 'positif', val
-        elif val == 3:
-            return 'netral', val
-        else:
-            return 'negatif', val
-    except ValueError:
-        return 'netral', 3
+    if val >= 4:
+        return 'positif', val
+    elif val == 3:
+        return 'netral', val
+    else:
+        return 'negatif', val
 
-def parse_year(tanggal_str):
+from datetime import datetime, timedelta
+
+def parse_date_info(tanggal_str):
     """
-    Map relative dates to years (assuming current year is 2026).
-    3 bulan lalu -> 2026
-    setahun lalu -> 2025
-    2 tahun lalu -> 2024
-    3 tahun lalu -> 2023
+    Parse relative date string into year, month, and a date object.
+    Assuming 'now' is June 2026 for consistency with previous seeding.
     """
+    now = datetime(2026, 6, 15) # Fixed reference point
+    
     if not isinstance(tanggal_str, str):
-        return 2026
+        return {'year': now.year, 'month': now.month, 'date_obj': now.date()}
     
-    tanggal_str = tanggal_str.lower()
-    if 'setahun' in tanggal_str or '1 tahun' in tanggal_str:
-        return 2025
+    t = tanggal_str.lower()
     
-    match = re.search(r'(\d+) tahun lalu', tanggal_str)
-    if match:
-        diff = int(match.group(1))
-        return 2026 - diff
-        
-    return 2026 # Default to current year for months/weeks/days ago
+    # Defaults
+    res_date = now
+    
+    if 'hari lalu' in t:
+        days = int(re.search(r'(\d+)', t).group(1)) if re.search(r'(\d+)', t) else 1
+        res_date = now - timedelta(days=days)
+    elif 'minggu lalu' in t:
+        weeks = int(re.search(r'(\d+)', t).group(1)) if re.search(r'(\d+)', t) else 1
+        res_date = now - timedelta(weeks=weeks)
+    elif 'bulan lalu' in t:
+        months = int(re.search(r'(\d+)', t).group(1)) if re.search(r'(\d+)', t) else 1
+        # Simple month subtraction
+        m = now.month - months
+        y = now.year
+        while m <= 0:
+            m += 12
+            y -= 1
+        res_date = datetime(y, m, 1)
+    elif 'setahun lalu' in t or '1 tahun lalu' in t:
+        res_date = now.replace(year=now.year - 1)
+    elif 'tahun lalu' in t:
+        years = int(re.search(r'(\d+)', t).group(1)) if re.search(r'(\d+)', t) else 1
+        res_date = now.replace(year=now.year - years)
+
+    return {
+        'year': res_date.year,
+        'month': res_date.month,
+        'date_obj': res_date.date()
+    }
 
 def seed_from_csv():
     app = create_app()

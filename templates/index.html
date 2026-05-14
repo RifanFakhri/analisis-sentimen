@@ -23,8 +23,31 @@
 </section>
 
 <!-- Prediction Section -->
-<section class="section" id="prediction-section">
-    <div class="container">
+        <!-- Dataset Upload Section (NEW) -->
+        <div class="predict-card glass-card mb-4" id="upload-card">
+            <div class="card-header">
+                <div class="card-icon" style="background: var(--accent-gradient);">
+                    <i class="fas fa-file-csv"></i>
+                </div>
+                <div>
+                    <h2 class="card-title">Upload Dataset Baru</h2>
+                    <p class="card-desc">Ganti dataset training dengan file CSV baru</p>
+                </div>
+            </div>
+            <div class="upload-area" id="upload-area" onclick="document.getElementById('csv-file').click()">
+                <input type="file" id="csv-file" accept=".csv" class="hidden" onchange="handleFileSelect(this)">
+                <i class="fas fa-cloud-upload-alt upload-icon"></i>
+                <p id="file-name">Klik atau drag file CSV ke sini</p>
+                <p class="upload-hint">Format: Teks Ulasan, Rating, Tanggal</p>
+            </div>
+            <div class="card-footer mt-3">
+                <button class="btn btn-accent btn-full hidden" id="btn-upload" onclick="uploadCSV()">
+                    <i class="fas fa-upload"></i>
+                    <span>Proses Dataset</span>
+                </button>
+            </div>
+        </div>
+
         <div class="predict-card glass-card" id="predict-card">
             <div class="card-header">
                 <div class="card-icon">
@@ -36,7 +59,20 @@
                 </div>
             </div>
 
-            <div class="input-group" id="input-group">
+            <!-- Model Training Required Message -->
+            <div id="training-required" class="{% if model_info.is_trained %}hidden{% endif %}">
+                <div class="error-state" style="margin-top: 0; background: rgba(255, 152, 0, 0.1); border-color: #ff9800;">
+                    <div class="error-icon" style="color: #ff9800;">
+                        <i class="fas fa-info-circle"></i>
+                    </div>
+                    <p class="error-text" style="color: #ff9800;">Model belum siap. Silakan upload dataset dan lakukan <strong>Training</strong> terlebih dahulu.</p>
+                    <a href="/train" class="btn btn-accent mt-3" style="width: auto;">
+                        <i class="fas fa-external-link-alt"></i> Ke Halaman Training
+                    </a>
+                </div>
+            </div>
+
+            <div class="input-group {% if not model_info.is_trained %}hidden{% endif %}" id="input-group">
                 <textarea
                     id="input-text"
                     class="text-input"

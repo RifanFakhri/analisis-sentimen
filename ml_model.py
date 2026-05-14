@@ -20,7 +20,7 @@ class SentimentModel:
 
     def __init__(self):
         self.vectorizer = TfidfVectorizer(max_features=5000, ngram_range=(1, 2))
-        self.model = ComplementNB(alpha=0.5)
+        self.model = ComplementNB(alpha=0.1)
         self.is_trained = False
         self.labels = ['negatif', 'netral', 'positif']
 
@@ -37,7 +37,7 @@ class SentimentModel:
             processed_texts, labels, test_size=0.2, random_state=42, stratify=labels
         )
 
-        # Moderate Oversampling for imbalanced data
+        # Strong Oversampling to reach full balance
         X_train = np.array(X_train)
         y_train = np.array(y_train)
         
@@ -51,11 +51,8 @@ class SentimentModel:
             indices = np.where(y_train == label)[0]
             label_X = X_train[indices]
             
-            if label == 'positif':
-                target_count = count # Keep positive as is
-            else:
-                # Boost minority classes but not all the way to max_count to avoid heavy overfitting
-                target_count = int(max_count * 0.7) 
+            # Target is now 100% of the majority class
+            target_count = max_count 
             
             repeat_factor = target_count // len(label_X)
             remainder = target_count % len(label_X)
@@ -84,9 +81,7 @@ class SentimentModel:
         conf_matrix = confusion_matrix(y_test, y_pred, labels=self.labels).tolist()
 
         # Save model
-        self.save_model()
-
-        return {
+        self.last_metrics = {
             'accuracy': round(accuracy * 100, 2),
             'report': report,
             'confusion_matrix': conf_matrix,
@@ -94,6 +89,9 @@ class SentimentModel:
             'test_size': len(X_test),
             'labels': self.labels
         }
+        self.save_model()
+
+        return self.last_metrics
 
     def predict(self, text):
         """
@@ -132,6 +130,8 @@ class SentimentModel:
         os.makedirs(Config.MODEL_DIR, exist_ok=True)
         joblib.dump(self.model, Config.MODEL_PATH)
         joblib.dump(self.vectorizer, Config.VECTORIZER_PATH)
+        if hasattr(self, 'last_metrics'):
+            joblib.dump(self.last_metrics, os.path.join(Config.MODEL_DIR, 'metrics.pkl'))
         print(f"Model saved to {Config.MODEL_DIR}")
 
     def load_model(self):
@@ -139,6 +139,9 @@ class SentimentModel:
         if os.path.exists(Config.MODEL_PATH) and os.path.exists(Config.VECTORIZER_PATH):
             self.model = joblib.load(Config.MODEL_PATH)
             self.vectorizer = joblib.load(Config.VECTORIZER_PATH)
+            metrics_path = os.path.join(Config.MODEL_DIR, 'metrics.pkl')
+            if os.path.exists(metrics_path):
+                self.last_metrics = joblib.load(metrics_path)
             self.is_trained = True
             print("Model loaded successfully.")
             return True
@@ -155,6 +158,25 @@ class SentimentModel:
             'model_type': 'Multinomial Naive Bayes',
             'vectorizer_type': 'TF-IDF (max_features=5000, ngram=1-2)',
         }
+
+    def reset_model(self):
+        """Delete all saved model files and reset internal state."""
+        self.is_trained = False
+        self.last_trained = None
+        self.last_metrics = None
+        self.model = ComplementNB(alpha=0.5)
+        self.vectorizer = TfidfVectorizer(max_features=5000, ngram_range=(1, 2))
+        
+        files_to_delete = [
+            Config.MODEL_PATH,
+            Config.VECTORIZER_PATH,
+            os.path.join(Config.MODEL_DIR, 'metrics.pkl')
+        ]
+        
+        for f in files_to_delete:
+            if os.path.exists(f):
+                os.remove(f)
+        return True
 
 
 # Global model instance

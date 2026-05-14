@@ -5,383 +5,265 @@
 {% block extra_css %}
 <style>
     :root {
-        --card-bg: rgba(255, 255, 255, 0.05);
-        --card-border: rgba(255, 255, 255, 0.1);
-        --glass-bg: rgba(255, 255, 255, 0.03);
+        --dash-bg: #0f172a;
+        --dash-card: rgba(30, 41, 59, 0.7);
+        --dash-border: rgba(255, 255, 255, 0.1);
+        --dash-text: #f8fafc;
+        --dash-text-sec: #94a3b8;
+        --dash-primary: #818cf8;
+        --dash-accent: #22d3ee;
     }
+
+    body { background-color: var(--dash-bg); color: var(--dash-text); }
 
     .dashboard-container {
         display: flex;
         flex-direction: column;
-        gap: 3rem;
-        padding-bottom: 5rem;
+        gap: 2rem;
+        padding: 2rem 0 5rem;
     }
 
-    .section-title {
-        font-size: 1.75rem;
-        font-weight: 800;
-        margin-bottom: 1.5rem;
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-        color: var(--text-primary);
-    }
-
-    .section-title i {
-        width: 50px;
-        height: 50px;
-        background: var(--primary-color);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: 12px;
-        font-size: 1.25rem;
-        color: white;
-        box-shadow: 0 8px 16px rgba(124, 58, 237, 0.3);
-    }
-
-    .section-subtitle {
-        color: var(--text-secondary);
-        font-size: 1rem;
-        margin-top: -1rem;
-        margin-bottom: 2rem;
-        margin-left: 60px;
-    }
-
-    /* Section 1: Dataset Table */
-    .dataset-table-card {
-        background: var(--card-bg);
-        border: 1px solid var(--card-border);
-        border-radius: 1.5rem;
-        overflow: hidden;
-        backdrop-filter: blur(10px);
-    }
-
-    .dataset-table {
-        width: 100%;
-        border-collapse: collapse;
-        text-align: left;
-    }
-
-    .dataset-table th {
-        background: rgba(255, 255, 255, 0.08);
-        padding: 1.25rem 1.5rem;
-        font-size: 0.85rem;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-        color: var(--text-secondary);
-    }
-
-    .dataset-table td {
-        padding: 1.25rem 1.5rem;
-        border-bottom: 1px solid var(--card-border);
-        font-size: 0.95rem;
-    }
-
-    .dataset-table tr:hover {
-        background: rgba(255, 255, 255, 0.02);
-    }
-
-    .badge-sentiment {
-        padding: 0.4rem 0.8rem;
-        border-radius: 20px;
-        font-size: 0.8rem;
-        font-weight: 600;
-        text-transform: capitalize;
-    }
-
-    .badge-positif { background: rgba(16, 185, 129, 0.2); color: #10b981; }
-    .badge-negatif { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
-    .badge-netral { background: rgba(107, 114, 128, 0.2); color: #9ca3af; }
-
-    /* Section 2: Charts Grid */
-    .charts-grid {
-        display: grid;
-        grid-template-columns: 1.5fr 1fr;
-        gap: 1.5rem;
-    }
-
-    .chart-card {
-        background: var(--card-bg);
-        border: 1px solid var(--card-border);
-        border-radius: 1.5rem;
-        padding: 2rem;
-        position: relative;
-    }
-
-    .chart-header {
-        margin-bottom: 2rem;
-        font-size: 1.25rem;
-        font-weight: 700;
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-    }
-
-    .chart-container {
-        height: 350px;
-        width: 100%;
-    }
-
-    /* Section 3: Complaint Analysis */
-    .complaints-grid {
-        display: grid;
-        grid-template-columns: 1fr 2fr;
-        gap: 1.5rem;
-    }
-
-    .keywords-card {
-        background: #f8fafc;
-        border-radius: 1.5rem;
-        overflow: hidden;
-    }
-
-    .keywords-header {
-        background: #ef4444;
-        color: white;
-        padding: 1.25rem 1.5rem;
-        font-weight: 700;
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-    }
-
-    .keyword-list {
-        padding: 1rem 0;
-    }
-
-    .keyword-item {
+    .dash-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding: 0.85rem 1.5rem;
-        border-bottom: 1px solid #e2e8f0;
-        color: #1e293b;
-    }
-
-    .keyword-item:last-child { border-bottom: none; }
-
-    .keyword-name { font-weight: 500; }
-    .keyword-count { 
-        background: #fee2e2; 
-        color: #ef4444; 
-        padding: 0.2rem 0.6rem; 
-        border-radius: 6px; 
-        font-size: 0.85rem;
-        font-weight: 700;
-    }
-
-    .samples-card {
-        background: white;
-        border: 1px solid #e2e8f0;
-        border-radius: 1.5rem;
-        padding: 2rem;
-    }
-
-    .sample-item {
-        padding: 1.25rem;
-        background: #fff5f5;
-        border: 1px solid #fee2e2;
-        border-left: 4px solid #ef4444;
-        border-radius: 0.75rem;
         margin-bottom: 1rem;
-        color: #475569;
-        font-style: italic;
-        position: relative;
+        padding: 1.5rem;
+        background: var(--dash-card);
+        border-radius: 16px;
+        border: 1px solid var(--dash-border);
+        backdrop-filter: blur(12px);
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
     }
 
-    .sample-icon {
-        position: absolute;
-        left: -15px;
-        top: 50%;
-        transform: translateY(-50%);
-        background: #ef4444;
-        color: white;
-        width: 30px;
-        height: 30px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 0.8rem;
+    .dash-title-wrap { display: flex; align-items: center; gap: 1rem; }
+    .dash-icon {
+        width: 48px; height: 48px; border-radius: 12px;
+        background: #10b981; color: white;
+        display: flex; align-items: center; justify-content: center; font-size: 1.5rem;
+        box-shadow: 0 0 15px rgba(16, 185, 129, 0.4);
     }
+    .dash-title h1 { font-size: 1.25rem; font-weight: 700; margin: 0; color: white; }
+    .dash-title p { font-size: 0.85rem; color: var(--dash-text-sec); margin: 0; }
 
-    /* Section 4: Summary & Recommendation */
-    .summary-cards {
+    /* Stats Grid */
+    .stats-row {
         display: grid;
-        grid-template-columns: repeat(3, 1fr);
+        grid-template-columns: repeat(4, 1fr);
         gap: 1.5rem;
-        margin-bottom: 2rem;
     }
 
-    .sum-card {
-        padding: 2.5rem 2rem;
-        border-radius: 1.5rem;
-        text-align: center;
+    .stat-box {
+        background: var(--dash-card);
+        border: 1px solid var(--dash-border);
+        border-radius: 16px;
+        padding: 1.5rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        backdrop-filter: blur(8px);
+        transition: transform 0.3s ease;
+    }
+    .stat-box:hover { transform: translateY(-5px); border-color: var(--dash-primary); }
+
+    .stat-box-label { font-size: 0.75rem; font-weight: 700; color: var(--dash-text-sec); text-transform: uppercase; letter-spacing: 0.05em; }
+    .stat-box-value { font-size: 2rem; font-weight: 800; color: white; }
+    .stat-box-sub { font-size: 0.8rem; color: var(--dash-text-sec); }
+    .stat-box-trend { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 10px; font-size: 0.75rem; font-weight: 600; }
+    .trend-up { background: rgba(16, 185, 129, 0.2); color: #34d399; }
+
+    /* Main Grid */
+    .main-dash-grid {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 1.5rem;
+    }
+
+    .dash-card {
+        background: var(--dash-card);
+        border: 1px solid var(--dash-border);
+        border-radius: 16px;
+        padding: 1.5rem;
+        backdrop-filter: blur(8px);
+    }
+
+    .card-title {
+        font-size: 1rem; font-weight: 700; margin-bottom: 1.5rem; color: white;
+        display: flex; align-items: center; gap: 0.75rem;
+    }
+
+    .chart-h { height: 300px; }
+
+    /* Table */
+    .table-responsive { overflow-x: auto; margin-top: 1rem; }
+    .dataset-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+    .dataset-table th { text-align: left; padding: 12px; background: rgba(255, 255, 255, 0.05); color: var(--dash-text-sec); font-weight: 600; border-bottom: 1px solid var(--dash-border); }
+    .dataset-table td { padding: 12px; border-bottom: 1px solid var(--dash-border); vertical-align: top; color: #cbd5e1; }
+    .dataset-table tr:hover { background: rgba(255, 255, 255, 0.02); }
+
+    .badge-s { padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; }
+    .b-pos { background: rgba(16, 185, 129, 0.2); color: #34d399; }
+    .b-neg { background: rgba(239, 68, 68, 0.2); color: #f87171; }
+    .b-net { background: rgba(148, 163, 184, 0.2); color: #94a3b8; }
+
+    /* Metrics List */
+    .metric-item {
+        display: flex; justify-content: space-between; align-items: center;
+        padding: 12px 0; border-bottom: 1px solid var(--dash-border);
+    }
+    .metric-item:last-child { border-bottom: none; }
+    .m-label { font-size: 0.9rem; color: var(--dash-text-sec); }
+    .m-val { font-weight: 700; color: white; }
+
+    .tag-cloud { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 1rem; }
+    .tag { padding: 6px 12px; background: rgba(255, 255, 255, 0.05); border-radius: 8px; font-size: 0.8rem; color: #cbd5e1; font-weight: 500; border: 1px solid var(--dash-border); }
+    .tag-pos { background: rgba(16, 185, 129, 0.1); color: #34d399; }
+    .tag-neg { background: rgba(239, 68, 68, 0.1); color: #f87171; }
+
+    .sample-box {
+        padding: 1rem; background: rgba(255, 255, 255, 0.03); border-radius: 12px; border-left: 4px solid var(--dash-primary);
+        font-size: 0.85rem; font-style: italic; margin-bottom: 1rem; color: #94a3b8;
+    }
+
+    .form-select {
+        background-color: #1e293b !important;
+        color: white !important;
+        border: 1px solid var(--dash-border) !important;
+        cursor: pointer;
+    }
+    .form-select option {
+        background-color: #1e293b;
         color: white;
-        position: relative;
-        overflow: hidden;
     }
-
-    .sum-card i {
-        font-size: 1.5rem;
-        margin-bottom: 1rem;
-        opacity: 0.6;
-    }
-
-    .sum-value { font-size: 3rem; font-weight: 900; margin-bottom: 0.5rem; }
-    .sum-label { font-size: 0.9rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; opacity: 0.8; }
-
-    .card-blue { background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); }
-    .card-red { background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); }
-    .card-yellow { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
-
-    .recommendation-box {
-        background: white;
-        border-radius: 1.5rem;
-        padding: 2.5rem;
-        border: 1px solid #e2e8f0;
-    }
-
-    .rec-title { font-size: 1.25rem; font-weight: 700; margin-bottom: 1.5rem; color: #1e293b; display: flex; align-items: center; gap: 0.75rem; }
-    .rec-title i { color: #3b82f6; }
-
-    .rec-item { margin-bottom: 1.5rem; }
-    .rec-heading { font-weight: 700; color: #334155; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem; }
-    .rec-text { color: #64748b; line-height: 1.6; }
 
     @media (max-width: 1024px) {
-        .charts-grid, .complaints-grid, .summary-cards { grid-template-columns: 1fr; }
+        .main-dash-grid, .stats-row { grid-template-columns: 1fr; }
     }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="container dashboard-container">
-    
-    <!-- Section 1: Dataset -->
-    <section>
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-            <div>
-                <h1 class="section-title" style="margin-bottom: 0;"><i><i class="fas fa-database"></i></i> Dataset Ulasan</h1>
-                <p class="section-subtitle" style="margin-bottom: 0;">Data mentah hasil crawling ulasan wisatawan Pulau Merak.</p>
-            </div>
-            <div class="filter-group">
-                <select id="dataset-sentiment-filter" class="form-select" style="padding: 0.75rem 1.5rem; border-radius: 12px; background: rgba(255,255,255,0.05); color: white; border: 1px solid rgba(255,255,255,0.1); cursor: pointer; outline: none;">
-                    <option value="all" style="background: #1e293b; color: white;">Semua Sentimen</option>
-                    <option value="positif" style="background: #1e293b; color: white;">Positif</option>
-                    <option value="netral" style="background: #1e293b; color: white;">Netral</option>
-                    <option value="negatif" style="background: #1e293b; color: white;">Negatif</option>
-                </select>
+    <!-- Dash Header -->
+    <header class="dash-header">
+        <div class="dash-title-wrap">
+            <div class="dash-icon"><i class="fas fa-map-marker-alt"></i></div>
+            <div class="dash-title">
+                <h1>Sentimen Wisatawan — Pulau Merak</h1>
+                <p>Google Maps Dataset Analisis • Naive Bayes Classifier</p>
             </div>
         </div>
-        
-        <div class="dataset-table-card">
-            <table class="dataset-table">
-                <thead>
-                    <tr>
-                        <th>Tahun</th>
-                        <th>Rating</th>
-                        <th>Sentimen</th>
-                        <th>Ulasan</th>
-                    </tr>
-                </thead>
-                <tbody id="dataset-tbody">
-                    <!-- Data will be loaded via JS -->
-                </tbody>
-            </table>
+        <div class="filter-group">
+            <select id="dataset-sentiment-filter" class="form-select" style="padding: 0.5rem 1rem; border-radius: 8px; font-size: 0.85rem;">
+                <option value="all">Filter: Semua Sentimen</option>
+                <option value="positif">Positif</option>
+                <option value="netral">Netral</option>
+                <option value="negatif">Negatif</option>
+            </select>
         </div>
-    </section>
+    </header>
 
-    <!-- Section 2: Trends -->
-    <section>
-        <h1 class="section-title"><i><i class="fas fa-chart-line"></i></i> Analisis Tren Sentimen</h1>
-        <p class="section-subtitle">Visualisasi distribusi sentimen ulasan berdasarkan tahun.</p>
-        
-        <div class="charts-grid">
-            <div class="chart-card">
-                <div class="chart-header">Tren Sentimen per Tahun (2023 - 2026)</div>
-                <div class="chart-container">
+    <!-- Stats Row -->
+    <div class="stats-row">
+        <div class="stat-box">
+            <span class="stat-box-label">Total Ulasan</span>
+            <span class="stat-box-value" id="sum-total">0</span>
+            <span class="stat-box-sub">Dataset dari CSV</span>
+        </div>
+        <div class="stat-box">
+            <span class="stat-box-label">Positif</span>
+            <span class="stat-box-value" id="sum-pos-count" style="color: #10b981;">0</span>
+            <span class="stat-box-sub"><span class="stat-box-trend trend-up" id="sum-pos-percent">0%</span> dari total</span>
+        </div>
+        <div class="stat-box">
+            <span class="stat-box-label">Negatif</span>
+            <span class="stat-box-value" id="sum-neg-count" style="color: #ef4444;">0</span>
+            <span class="stat-box-sub"><span class="stat-box-trend" style="background:rgba(239, 68, 68, 0.2); color:#f87171;" id="sum-neg-percent">0%</span> dari total</span>
+        </div>
+        <div class="stat-box">
+            <span class="stat-box-label">Akurasi Model</span>
+            <span class="stat-box-value" id="sum-accuracy" style="color: #818cf8;">0%</span>
+            <span class="stat-box-sub">Naive Bayes • TF-IDF</span>
+        </div>
+    </div>
+
+    <!-- Main Grid -->
+    <div class="main-dash-grid">
+        <!-- Left Column -->
+        <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+            <!-- Trend Chart -->
+            <div class="dash-card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                    <div class="card-title" style="margin-bottom: 0;"><i class="fas fa-chart-line" style="color:var(--dash-primary)"></i> Tren Sentimen</div>
+                    <select id="trend-range-filter" class="form-select" style="width: auto; padding: 0.4rem 0.8rem; border-radius: 8px; background: rgba(255,255,255,0.05); color: white; border: 1px solid var(--dash-border); font-size: 0.8rem;">
+                        <option value="3m">3 Bulan Terakhir</option>
+                        <option value="6m" selected>6 Bulan Terakhir</option>
+                        <option value="1y">1 Tahun Terakhir</option>
+                        <option value="all">Semua Waktu</option>
+                    </select>
+                </div>
+                <div class="chart-h">
                     <canvas id="trendChart"></canvas>
                 </div>
             </div>
-            <div class="chart-card">
-                <div class="chart-header"><i class="fas fa-circle-check" style="color: #3b82f6;"></i> Distribusi Total</div>
-                <div class="chart-container">
+
+            <!-- Aspects Analysis -->
+            <div class="dash-card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                    <div class="card-title" style="margin-bottom: 0;"><i class="fas fa-list-check" style="color:var(--dash-accent)"></i> Aspek yang sering dibahas</div>
+                    <span style="font-size: 0.75rem; color: var(--dash-text-sec); background: rgba(255,255,255,0.05); padding: 2px 8px; border-radius: 4px;">top keywords - TF</span>
+                </div>
+                <div id="aspects-list" style="display: flex; flex-direction: column; gap: 1.25rem;">
+                    <!-- JS -->
+                </div>
+                
+                <!-- Word Clouds -->
+                <div style="margin-top: 2.5rem; display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                    <div>
+                        <div class="card-title" style="font-size: 0.9rem;"><i class="fas fa-cloud" style="color:#34d399"></i> Word cloud sentimen positif</div>
+                        <div class="tag-cloud" id="pos-keywords-list" style="margin-top: 0.5rem;">
+                            <!-- JS -->
+                        </div>
+                    </div>
+                    <div>
+                        <div class="card-title" style="font-size: 0.9rem;"><i class="fas fa-cloud" style="color:#f87171"></i> Word cloud sentimen negatif</div>
+                        <div class="tag-cloud" id="neg-keywords-list" style="margin-top: 0.5rem;">
+                            <!-- JS -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column -->
+        <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+            <!-- Distribution -->
+            <div class="dash-card">
+                <div class="card-title"><i class="fas fa-chart-pie" style="color:#f59e0b"></i> Distribusi Sentimen</div>
+                <div style="height: 200px;">
                     <canvas id="distributionChart"></canvas>
                 </div>
+                <div style="margin-top: 1.5rem;">
+                    <div class="metric-item"><span class="m-label">Presisi</span><span class="m-val" id="metric-precision">0%</span></div>
+                    <div class="metric-item"><span class="m-label">Recall</span><span class="m-val" id="metric-recall">0%</span></div>
+                    <div class="metric-item"><span class="m-label">F1-Score</span><span class="m-val" id="metric-f1">0%</span></div>
+                </div>
             </div>
-        </div>
-    </section>
 
-    <!-- Section 3: Complaints -->
-    <section>
-        <h1 class="section-title" style="color: #ef4444;"><i><i class="fas fa-triangle-exclamation"></i></i> Analisis Keluhan Pengguna</h1>
-        <p class="section-subtitle">Identifikasi masalah utama yang dihadapi oleh wisatawan.</p>
-        
-        <div class="complaints-grid">
-            <div class="keywords-card">
-                <div class="keywords-header">
-                    <i class="fas fa-key"></i> Top 10 Kata Kunci Negatif
-                </div>
-                <div class="keyword-list" id="neg-keywords-list">
-                    <!-- Loaded via JS -->
-                </div>
-            </div>
-            <div class="samples-card">
-                <div class="rec-title"><i class="fas fa-quote-left"></i> Sampel Ulasan Negatif</div>
+            <!-- Samples -->
+            <div class="dash-card">
+                <div class="card-title"><i class="fas fa-quote-left" style="color:var(--dash-primary)"></i> Sample ulasan</div>
                 <div id="neg-samples-list">
-                    <!-- Loaded via JS -->
+                    <!-- JS -->
+                </div>
+                <div style="text-align: center; margin-top: 1rem;">
+                    <div style="width: 32px; height: 32px; border-radius: 50%; background: rgba(255,255,255,0.05); display: inline-flex; align-items: center; justify-content: center; cursor: pointer;">
+                        <i class="fas fa-chevron-down" style="font-size: 0.8rem; color: var(--dash-text-sec);"></i>
+                    </div>
                 </div>
             </div>
         </div>
-    </section>
-
-    <!-- Section 4: Conclusion -->
-    <section>
-        <h1 class="section-title" style="color: #3b82f6;"><i><i class="fas fa-check-double"></i></i> Kesimpulan & Rekomendasi</h1>
-        <p class="section-subtitle">Ringkasan temuan utama dan saran strategis bagi pengelola.</p>
-        
-        <div class="summary-cards">
-            <div class="sum-card card-blue">
-                <i class="fas fa-comments"></i>
-                <div class="sum-value" id="sum-total">0</div>
-                <div class="sum-label">Total Ulasan</div>
-            </div>
-            <div class="sum-card card-red">
-                <i class="fas fa-face-frown"></i>
-                <div class="sum-value" id="sum-neg">0%</div>
-                <div class="sum-label">Persentase Negatif</div>
-            </div>
-            <div class="sum-card card-yellow">
-                <i class="fas fa-calendar-xmark"></i>
-                <div class="sum-value" id="sum-worst">0</div>
-                <div class="sum-label">Tahun Terburuk</div>
-            </div>
-        </div>
-
-        <div class="recommendation-box">
-            <div class="rec-title"><i class="fas fa-lightbulb"></i> Analisis & Saran</div>
-            
-            <div class="rec-item">
-                <div class="rec-heading"><i class="fas fa-magnifying-glass"></i> Kesimpulan</div>
-                <div class="rec-text" id="summary-text">
-                    Memproses data...
-                </div>
-            </div>
-
-            <div class="rec-item">
-                <div class="rec-heading"><i class="fas fa-rocket"></i> Saran Pengembangan</div>
-                <ul class="rec-text" id="suggestion-list" style="padding-left: 1.5rem;">
-                    <li>Meningkatkan kebersihan area pantai terutama dari sampah plastik.</li>
-                    <li>Memperbaiki fasilitas umum seperti toilet dan mushola.</li>
-                    <li>Menambah variasi pedagang makanan dan minuman di area pulau.</li>
-                </ul>
-            </div>
-        </div>
-    </section>
-
+    </div>
 </div>
 {% endblock %}
 

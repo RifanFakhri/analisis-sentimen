@@ -1,17 +1,35 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Sistem Analisis Sentimen berbasis Multinomial Naive Bayes untuk ulasan Bahasa Indonesia">
+    <meta name="description"
+        content="Sistem Analisis Sentimen berbasis Multinomial Naive Bayes untuk ulasan Bahasa Indonesia">
     <title>{% block title %}Sentiment Analysis{% endblock %} | MNB Analyzer</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        .swal2-popup {
+            background: #1e293b !important;
+            color: white !important;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .swal2-title, .swal2-html-container {
+            color: white !important;
+        }
+    </style>
+    
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     {% block extra_css %}{% endblock %}
 </head>
+
 <body>
     <!-- Navigation -->
     <nav class="navbar" id="main-navbar">
@@ -20,28 +38,33 @@
                 <div class="brand-icon">
                     <i class="fas fa-brain"></i>
                 </div>
-                <span class="brand-text">Sentiment<span class="brand-accent">AI</span></span>
+                <span class="brand-text">Analisis <span class="brand-accent">Pulau Merak</span></span>
             </a>
             <div class="nav-links" id="nav-links">
-                <a href="/" class="nav-link {% if request.endpoint == 'main.index' %}active{% endif %}" id="nav-predict">
+                <a href="/" class="nav-link {% if request.endpoint == 'main.index' %}active{% endif %}"
+                    id="nav-predict">
                     <i class="fas fa-magic"></i>
                     <span>Prediksi</span>
                 </a>
-                <a href="/history" class="nav-link {% if request.endpoint == 'main.history' %}active{% endif %}" id="nav-history">
+                <a href="/history" class="nav-link {% if request.endpoint == 'main.history' %}active{% endif %}"
+                    id="nav-history">
                     <i class="fas fa-history"></i>
                     <span>Histori</span>
                 </a>
-                <a href="/dashboard" class="nav-link {% if request.endpoint == 'main.dashboard' %}active{% endif %}" id="nav-dashboard">
+                <a href="/dashboard" class="nav-link {% if request.endpoint == 'main.dashboard' %}active{% endif %}"
+                    id="nav-dashboard">
                     <i class="fas fa-chart-line"></i>
                     <span>Dashboard</span>
                 </a>
-                <a href="/train" class="nav-link {% if request.endpoint == 'main.train_page' %}active{% endif %}" id="nav-train">
+                <a href="/train" class="nav-link {% if request.endpoint == 'main.train_page' %}active{% endif %}"
+                    id="nav-train">
                     <i class="fas fa-cogs"></i>
                     <span>Training</span>
                 </a>
             </div>
             <div class="nav-status">
-                <div class="status-dot {% if model_info.is_trained %}status-active{% else %}status-inactive{% endif %}" id="model-status-dot"></div>
+                <div class="status-dot {% if model_info.is_trained %}status-active{% else %}status-inactive{% endif %}"
+                    id="model-status-dot"></div>
                 <span class="status-text" id="model-status-text">
                     {% if model_info.is_trained %}Model Ready{% else %}Model Not Trained{% endif %}
                 </span>
@@ -73,4 +96,5 @@
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
     {% block extra_js %}{% endblock %}
 </body>
+
 </html>

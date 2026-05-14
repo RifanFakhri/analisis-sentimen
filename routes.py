@@ -3,13 +3,16 @@ Flask routes for Sentiment Analysis application.
 """
 
 from flask import Blueprint, render_template, request, jsonify
-from models import db, PredictionHistory, TrainingData
+from models import db, PredictionHistory, TrainingData, TrainingLog
 from ml_model import sentiment_model
 from preprocessing import preprocess_for_display, preprocess_text
 from sqlalchemy import func
 from collections import Counter
-import datetime
+from datetime import datetime, timedelta
 import re
+import pandas as pd
+import io
+import os
 
 main_bp = Blueprint('main', __name__)
 
@@ -18,100 +21,157 @@ main_bp = Blueprint('main', __name__)
 def get_stats():
     """Get comprehensive statistics for the interactive dashboard."""
     sentiment_filter = request.args.get('sentiment', 'all')
+    time_range = request.args.get('range', '6m') # 3m, 6m, 1y, all
     
-    # 1. Dataset Summary & Worst Year
-    all_data = TrainingData.query.all()
+    # 1. Base Data
+    query = TrainingData.query
+    if sentiment_filter != 'all':
+        query = query.filter_by(label=sentiment_filter)
+    
+    all_data = query.all()
     total_reviews = len(all_data)
     
-    # Calculate counts and percentage
+    if total_reviews == 0:
+        return jsonify({'summary': {'total_reviews': 0}, 'metrics': {'is_trained': False}, 'error': 'No data'})
+
     sentiment_counts = Counter([d.label for d in all_data])
-    neg_count = sentiment_counts.get('negatif', 0)
-    neg_percent = round((neg_count / total_reviews * 100), 1) if total_reviews > 0 else 0
     
-    # 2. Trend per Year (2023 - 2026)
-    years = [2023, 2024, 2025, 2026]
-    trend_data = {year: {'positif': 0, 'netral': 0, 'negatif': 0} for year in years}
+    # 2. Aspect Analysis (Aspek yang sering dibahas)
+    aspect_keywords = {
+        'Keindahan': ['indah', 'bagus', 'cantik', 'pemandangan', 'keren', 'view', 'pesona'],
+        'Aksesibilitas': ['jalan', 'akses', 'transportasi', 'perjalanan', 'jauh', 'macet', 'lokasi'],
+        'Fasilitas': ['toilet', 'mushola', 'fasilitas', 'kamar mandi', 'tempat duduk', 'sarana'],
+        'Kebersihan': ['bersih', 'sampah', 'kotor', 'bau', 'limbah', 'terawat'],
+        'Harga tiket': ['harga', 'tiket', 'murah', 'mahal', 'biaya', 'tarif', 'bayar'],
+        'Pelayanan': ['petugas', 'layanan', 'ramah', 'service', 'pengelola', 'orang']
+    }
     
-    for d in all_data:
-        if d.tahun in trend_data:
-            trend_data[d.tahun][d.label] += 1
-            
-    # Find Worst Year (highest negative count)
-    worst_year = max(trend_data.keys(), key=lambda y: trend_data[y]['negatif'])
+    aspect_stats = []
+    for aspect, keywords in aspect_keywords.items():
+        count = 0
+        for d in all_data:
+            if any(kw in d.text.lower() for kw in keywords):
+                count += 1
+        percent = round((count / total_reviews * 100), 1)
+        aspect_stats.append({'aspect': aspect, 'count': count, 'percent': percent})
     
-    # 3. Top Keywords for Complaints (Negatif) - OPTIMIZED: Skip Stemming for speed
-    neg_reviews = [d for d in all_data if d.label == 'negatif']
-    neg_words = []
+    # Sort aspects by count
+    aspect_stats = sorted(aspect_stats, key=lambda x: x['count'], reverse=True)
+
+    # 3. Monthly Trend
+    # Determine start date based on range
+    now = datetime(2026, 6, 15)
+    if time_range == '3m':
+        start_date = now - timedelta(days=90)
+    elif time_range == '6m':
+        start_date = now - timedelta(days=180)
+    elif time_range == '1y':
+        start_date = now - timedelta(days=365)
+    else:
+        start_date = datetime(2020, 1, 1)
+
+    # Filter data by date
+    trend_data_query = TrainingData.query.filter(TrainingData.tanggal_asli >= start_date.date()).all()
     
-    # Simple fast cleaning for dashboard keywords
+    # Group by Month-Year
+    month_map = {1:'Jan', 2:'Feb', 3:'Mar', 4:'Apr', 5:'May', 6:'Jun', 7:'Jul', 8:'Aug', 9:'Sep', 10:'Oct', 11:'Nov', 12:'Dec'}
+    
+    # Create labels for the range
+    monthly_stats = []
+    current = start_date.replace(day=1)
+    while current <= now:
+        m = current.month
+        y = current.year
+        
+        pos = len([d for d in trend_data_query if d.bulan == m and d.tahun == y and d.label == 'positif'])
+        neg = len([d for d in trend_data_query if d.bulan == m and d.tahun == y and d.label == 'negatif'])
+        
+        monthly_stats.append({
+            'label': f"{month_map[m]} {y}",
+            'positif': pos,
+            'negatif': neg
+        })
+        
+        # Advance month
+        if current.month == 12:
+            current = current.replace(year=current.year + 1, month=1)
+        else:
+            current = current.replace(month=current.month + 1)
+
+    # 4. Top Keywords (Word Cloud)
     def fast_clean(text):
         text = text.lower()
         text = re.sub(r'[^a-zA-Z\s]', '', text)
         return text.split()
 
-    for d in neg_reviews:
-        words = fast_clean(d.text)
-        # Filter out common stopwords manually or use the list
-        neg_words.extend([w for w in words if len(w) > 3]) # Simple filter for dashboard
-        
+    neg_words = []
+    for d in [d for d in all_data if d.label == 'negatif']:
+        neg_words.extend([w for w in fast_clean(d.text) if len(w) > 3])
     top_neg = Counter(neg_words).most_common(10)
     
-    # Positive keywords for comparison
-    pos_reviews = [d for d in all_data if d.label == 'positif']
     pos_words = []
-    for d in pos_reviews:
-        words = fast_clean(d.text)
-        pos_words.extend([w for w in words if len(w) > 3])
+    for d in [d for d in all_data if d.label == 'positif']:
+        pos_words.extend([w for w in fast_clean(d.text) if len(w) > 3])
     top_pos = Counter(pos_words).most_common(10)
 
-    # 4. Dataset Sample (Filtered)
-    filtered_data = all_data
-    if sentiment_filter != 'all':
-        filtered_data = [d for d in all_data if d.label == sentiment_filter]
-
-    dataset_sample = []
-    for d in filtered_data[:50]: # Increased to 50 for better filtering experience
-        dataset_sample.append({
-            'tahun': d.tahun,
-            'rating': d.rating,
-            'sentimen': d.label,
-            'ulasan': (d.text[:120] + '...') if len(d.text) > 120 else d.text
-        })
-
-    # 5. Negative Samples
-    neg_samples = []
-    for d in neg_reviews[:5]:
-        neg_samples.append(d.text)
+    # 5. Training Metrics (Dynamic based on filter)
+    info = sentiment_model.get_model_info()
+    metrics = {'is_trained': False}
+    
+    if info['is_trained'] and hasattr(sentiment_model, 'last_metrics'):
+        m = sentiment_model.last_metrics
+        report = m.get('report', {})
+        
+        # Determine which key to look at in the classification report
+        # report keys are 'positif', 'netral', 'negatif', 'macro avg', etc.
+        target_key = sentiment_filter if (sentiment_filter != 'all' and sentiment_filter in report) else 'macro avg'
+        
+        if target_key in report:
+            class_metrics = report[target_key]
+            metrics = {
+                'accuracy': m['accuracy'],
+                'precision': round(class_metrics.get('precision', 0) * 100, 1),
+                'recall': round(class_metrics.get('recall', 0) * 100, 1),
+                'f1': round(class_metrics.get('f1-score', 0) * 100, 1),
+                'is_trained': True,
+                'target': target_key
+            }
 
     return jsonify({
         'summary': {
             'total_reviews': total_reviews,
-            'neg_percent': neg_percent,
-            'worst_year': worst_year
+            'pos_count': sentiment_counts.get('positif', 0),
+            'neg_count': sentiment_counts.get('negatif', 0),
+            'pos_percent': round((sentiment_counts.get('positif', 0) / total_reviews * 100), 1) if total_reviews > 0 else 0,
+            'neg_percent': round((sentiment_counts.get('negatif', 0) / total_reviews * 100), 1) if total_reviews > 0 else 0,
         },
+        'metrics': metrics,
+        'aspects': aspect_stats,
         'trend': {
-            'years': years,
-            'positif': [trend_data[y]['positif'] for y in years],
-            'netral': [trend_data[y]['netral'] for y in years],
-            'negatif': [trend_data[y]['negatif'] for y in years]
+            'labels': [m['label'] for m in monthly_stats],
+            'positif': [m['positif'] for m in monthly_stats],
+            'negatif': [m['negatif'] for m in monthly_stats]
         },
         'distribution': {
             'labels': ['Negatif', 'Netral', 'Positif'],
             'values': [sentiment_counts.get('negatif', 0), sentiment_counts.get('netral', 0), sentiment_counts.get('positif', 0)]
         },
-        'complaints': {
-            'top_keywords': [{'word': w, 'count': c} for w, c in top_neg],
-            'samples': neg_samples
-        },
+        'top_neg': [{'word': w, 'count': c} for w, c in top_neg],
         'top_pos': [{'word': w, 'count': c} for w, c in top_pos],
-        'dataset': dataset_sample
+        'samples': [d.text for d in all_data[:5]]
     })
 
 
 @main_bp.route('/')
 def index():
     """Home page - Sentiment prediction form."""
+    total_data = TrainingData.query.count()
     model_info = sentiment_model.get_model_info()
+    
+    # Jika database kosong, paksa model_info.is_trained jadi False
+    if total_data == 0:
+        model_info['is_trained'] = False
+        
     return render_template('index.html', model_info=model_info)
 
 
@@ -280,6 +340,14 @@ def train_model():
 
         metrics = sentiment_model.train(texts, labels)
 
+        # Log training activity
+        log = TrainingLog(
+            activity_type='training',
+            details=f"Model trained successfully with {len(texts)} samples. Accuracy: {metrics['accuracy']}%"
+        )
+        db.session.add(log)
+        db.session.commit()
+
         return jsonify({
             'success': True,
             'metrics': metrics
@@ -287,6 +355,92 @@ def train_model():
 
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+
+@main_bp.route('/api/upload-dataset', methods=['POST'])
+def upload_dataset():
+    """Upload CSV dataset and replace current training data."""
+    try:
+        if 'file' not in request.files:
+            return jsonify({'error': 'Tidak ada file yang diupload.'}), 400
+        
+        file = request.files['file']
+        if file.filename == '':
+            return jsonify({'error': 'Nama file kosong.'}), 400
+        
+        if not file.filename.endswith('.csv'):
+            return jsonify({'error': 'Hanya file CSV yang diperbolehkan.'}), 400
+
+        # Read CSV
+        df = pd.read_csv(io.StringIO(file.stream.read().decode("UTF8")))
+        
+        # Check required columns
+        required_cols = ['Teks Ulasan', 'Rating', 'Tanggal']
+        if not all(col in df.columns for col in required_cols):
+            return jsonify({'error': f'CSV harus memiliki kolom: {", ".join(required_cols)}'}), 400
+
+        # Clear existing data
+        TrainingData.query.delete()
+        
+        # Parse data (using logic similar to seed_data.py)
+        from seed_data import map_rating_to_sentiment, parse_date_info
+        
+        training_rows = []
+        for index, row in df.iterrows():
+            text = str(row['Teks Ulasan'])
+            rating = row['Rating']
+            tanggal_raw = str(row['Tanggal'])
+            
+            # Map sentiment
+            label, rating_val = map_rating_to_sentiment(rating)
+            
+            # Parse date info (year, month)
+            date_info = parse_date_info(tanggal_raw)
+            
+            training_rows.append(TrainingData(
+                text=text,
+                label=label,
+                rating=rating_val,
+                tahun=date_info['year'],
+                bulan=date_info['month'],
+                tanggal_asli=date_info['date_obj']
+            ))
+            
+        db.session.bulk_save_objects(training_rows)
+        added = len(training_rows)
+
+        # Reset model training status because data changed
+        sentiment_model.is_trained = False
+        # Remove existing model files to force retraining
+        from config import Config
+        if os.path.exists(Config.MODEL_PATH):
+            os.remove(Config.MODEL_PATH)
+        if os.path.exists(Config.VECTORIZER_PATH):
+            os.remove(Config.VECTORIZER_PATH)
+        
+        # Log upload activity
+        log = TrainingLog(
+            activity_type='upload',
+            details=f"Dataset uploaded: {file.filename} ({added} records). Model reset."
+        )
+        db.session.add(log)
+        db.session.commit()
+
+        return jsonify({
+            'success': True,
+            'message': f'Berhasil mengupload {added} data. Silakan lakukan training ulang.',
+            'added_count': added
+        })
+
+    except Exception as e:
+        return jsonify({'error': f'Gagal memproses CSV: {str(e)}'}), 500
+
+
+@main_bp.route('/api/training-logs')
+def get_training_logs():
+    """Get history of uploads and training sessions."""
+    logs = TrainingLog.query.order_by(TrainingLog.created_at.desc()).limit(20).all()
+    return jsonify([log.to_dict() for log in logs])
 
 
 @main_bp.route('/api/training-data', methods=['POST'])
@@ -347,6 +501,23 @@ def add_bulk_training_data():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+@main_bp.route('/api/reset', methods=['POST'])
+def reset_system():
+    """Reset the entire system: DB and Model."""
+    try:
+        # 1. Clear DB
+        TrainingData.query.delete()
+        PredictionHistory.query.delete()
+        TrainingLog.query.delete()
+        
+        # 2. Reset Model
+        sentiment_model.reset_model()
+        
+        db.session.commit()
+        return jsonify({'message': 'Sistem berhasil direset ke pengaturan awal.'}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
 
 @main_bp.route('/api/model-info')
 def model_info():
