@@ -40,6 +40,11 @@ Aplikasi ini dibangun menggunakan **Flask** untuk backend, **PostgreSQL** untuk 
    source venv/bin/activate
    ```
 
+   Jika PowerShell menolak menjalankan skrip `activate`, jalankan Python langsung dari virtual environment:
+   ```bash
+   .\venv\Scripts\python.exe -m pip install -r requirements.txt
+   ```
+
 3. **Install Dependensi**
    ```bash
    pip install -r requirements.txt
@@ -66,6 +71,12 @@ Aplikasi ini dibangun menggunakan **Flask** untuk backend, **PostgreSQL** untuk 
    ```bash
    python app.py
    ```
+
+   Jika aktivasi virtual environment tidak berhasil di Windows PowerShell, jalankan:
+   ```bash
+   .\venv\Scripts\python.exe app.py
+   ```
+
    Aplikasi akan berjalan di `http://127.0.0.1:5000`.
 
 ## 🧠 Alur Kerja Sistem
