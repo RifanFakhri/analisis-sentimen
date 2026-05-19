@@ -74,16 +74,44 @@ Aplikasi ini dibangun menggunakan **Flask** untuk backend, **PostgreSQL** untuk 
 3. **Feature Extraction**: Pembobotan kata menggunakan TF-IDF (n-gram 1-2).
 4. **Classification**: Prediksi kategori menggunakan model Complement Naive Bayes yang sudah dilatih.
 5. **Output**: Label sentimen, skor kepercayaan, dan visualisasi distribusi peluang.
+## Jupyter Notebook (Proses Step-by-Step)
+Untuk keperluan pembelajaran, eksperimen, dan visualisasi analisis sentimen secara interaktif, proyek ini menyediakan file Jupyter Notebook:
+-   **File**: `sentiment_analysis.ipynb`
+-   **Isi**: Penjelasan teoretis, visualisasi distribusi rating, dry-run preprocessing step-by-step, penyeimbangan kelas (oversampling), pelatihan model Complement Naive Bayes, evaluasi performa (confusion matrix), dan simulasi prediksi real-time.
+
+Untuk menjalankan notebook:
+1.  Aktifkan virtual environment Anda:
+    ```bash
+    # Windows (PowerShell):
+    .\venv\Scripts\activate
+    
+    # Windows (CMD):
+    venv\Scripts\activate
+    ```
+2.  Install Jupyter Notebook jika belum terinstall. Jika muncul error "Access is denied", pastikan venv sudah aktif, atau gunakan opsi `--user`:
+    ```bash
+    pip install jupyter notebook matplotlib seaborn
+    # ATAU jika menginstal global:
+    pip install --user jupyter notebook matplotlib seaborn
+    ```
+3.  Jalankan server Jupyter:
+    ```bash
+    jupyter notebook
+    ```
+4.  Buka file `sentiment_analysis.ipynb` di browser Anda.
 
 ## 📂 Struktur Proyek
-- `app.py`: Entry point aplikasi Flask.
-- `routes.py`: Definisi endpoint API dan rute halaman.
-- `models.py`: Definisi skema database SQLAlchemy.
-- `ml_model.py`: Logika pelatihan dan prediksi machine learning.
-- `preprocessing.py`: Pipeline pemrosesan teks bahasa Indonesia.
-- `seed_data.py`: Script untuk migrasi dan import data dari CSV.
-- `static/`: File aset (CSS, JS, Gambar).
-- `templates/`: File template HTML (Jinja2).
+- `app.py`: Entry point utama untuk menjalankan aplikasi web Flask.
+- `routes.py`: Rute endpoint API dan kontroler halaman web.
+- `models.py`: Definisi skema tabel database SQLAlchemy (PostgreSQL/SQLite).
+- `ml_model.py`: Modul logika machine learning (pelatihan, prediksi, ekspor model).
+- `preprocessing.py`: Pipeline pembersihan dan normalisasi teks bahasa Indonesia.
+- `seed_data.py`: Script untuk inisialisasi awal database dari file CSV.
+- `sentiment_analysis.ipynb`: Notebook Jupyter berisi alur pembelajaran interaktif step-by-step.
+- `dataset/`: Direktori penyimpanan file dataset CSV (`dataset_master_merak_lengkap.csv`).
+- `model/`: Direktori penyimpanan file model terkompresi (`model.pkl`, `vectorizer.pkl`, `metrics.pkl`).
+- `static/`: File static web (CSS modern, JavaScript Chart.js/SweetAlert2).
+- `templates/`: Template halaman antarmuka web (Jinja2 HTML).
 
 ## 📝 Lisensi
 Distribusi di bawah lisensi MIT. Lihat `LICENSE` untuk informasi lebih lanjut.
