@@ -98,9 +98,16 @@ def seed_from_csv():
                 continue
                 
             label, rating = map_rating_to_sentiment(row['Rating'])
-            tahun = parse_year(row['Tanggal'])
+            date_info = parse_date_info(row['Tanggal'])
             
-            entry = TrainingData(text=text, label=label, rating=rating, tahun=tahun)
+            entry = TrainingData(
+                text=text,
+                label=label,
+                rating=rating,
+                tahun=date_info['year'],
+                bulan=date_info['month'],
+                tanggal_asli=date_info['date_obj']
+            )
             db.session.add(entry)
             added += 1
             
