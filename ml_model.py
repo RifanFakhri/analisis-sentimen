@@ -6,29 +6,76 @@ Handles training, saving, loading, and prediction using Multinomial Naive Bayes.
 import os
 import joblib
 import numpy as np
+import random
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.naive_bayes import ComplementNB
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import classification_report, accuracy_score, confusion_matrix
+from sklearn.metrics import classification_report, accuracy_score, confusion_matrix, f1_score
+from collections import Counter
 
 from config import Config
 from preprocessing import preprocess_text
+
+
+def random_oversample_negative(X_train, y_train, random_state=42):
+    """
+    Simple random oversampling for minority class (negatif).
+    Duplicates negative samples to match the majority class.
+    """
+    random.seed(random_state)
+    
+    X_train = list(X_train)
+    y_train = list(y_train)
+    
+    # Count classes
+    class_counts = Counter(y_train)
+    max_count = max(class_counts.values())
+    neg_count = class_counts.get('negatif', 0)
+    
+    if neg_count > 0 and neg_count < max_count:
+        # Get negative indices
+        neg_indices = [i for i, label in enumerate(y_train) if label == 'negatif']
+        # Random sample to add
+        num_to_add = max_count - neg_count
+        oversample_indices = random.choices(neg_indices, k=num_to_add)
+        
+        # Add oversampled data
+        for idx in oversample_indices:
+            X_train.append(X_train[idx])
+            y_train.append(y_train[idx])
+        
+        print(f"Random Oversampling: Negatif {neg_count} → {neg_count + num_to_add}")
+    
+    return X_train, y_train
 
 
 class SentimentModel:
     """Sentiment Analysis model using Complement Naive Bayes with TF-IDF."""
 
     def __init__(self):
-        self.vectorizer = TfidfVectorizer(max_features=5000, ngram_range=(1, 2))
-        self.model = ComplementNB(alpha=0.1)
+        self.tfidf_params = {
+            'max_features': 5000,
+            'ngram_range': (1, 2),
+            'min_df': 5,
+            'max_df': 0.90,
+            'sublinear_tf': True,
+            'smooth_idf': True
+        }
+        self.vectorizer = self._create_vectorizer(self.tfidf_params)
+        self.model = ComplementNB(alpha=1.0)
         self.is_trained = False
         self.labels = ['negatif', 'netral', 'positif']
 
     def train(self, texts, labels):
         """
         Train the model on preprocessed texts and their labels.
+        Applies random oversampling for minority class (negatif).
         Returns training metrics.
         """
+        # Set seed for reproducibility
+        np.random.seed(42)
+        random.seed(42)
+        
         # Preprocess all texts
         processed_texts = [preprocess_text(text) for text in texts]
 
@@ -37,40 +84,22 @@ class SentimentModel:
             processed_texts, labels, test_size=0.2, random_state=42, stratify=labels
         )
 
-        # Strong Oversampling to reach full balance
+        # Apply random oversampling for negative class
+        print("\n=== Applying Random Oversampling ===")
+        X_train, y_train = random_oversample_negative(X_train, y_train, random_state=42)
+        print("=" * 35 + "\n")
+
         X_train = np.array(X_train)
         y_train = np.array(y_train)
-        
-        unique_labels, counts = np.unique(y_train, return_counts=True)
-        max_count = max(counts)
-        
-        X_resampled = []
-        y_resampled = []
-        
-        for label, count in zip(unique_labels, counts):
-            indices = np.where(y_train == label)[0]
-            label_X = X_train[indices]
-            
-            # Target is now 100% of the majority class
-            target_count = max_count 
-            
-            repeat_factor = target_count // len(label_X)
-            remainder = target_count % len(label_X)
-            
-            resampled_X = np.concatenate([label_X] * repeat_factor + [label_X[:remainder]])
-            resampled_y = [label] * target_count
-            
-            X_resampled.extend(resampled_X)
-            y_resampled.extend(resampled_y)
-            
-        X_train = X_resampled
-        y_train = y_resampled
 
-        # TF-IDF Vectorization
+        # TF-IDF tuning and vectorization
+        self.tfidf_params = self._select_best_tfidf_params(X_train, y_train)
+        self.vectorizer = self._create_vectorizer(self.tfidf_params)
+
         X_train_tfidf = self.vectorizer.fit_transform(X_train)
         X_test_tfidf = self.vectorizer.transform(X_test)
 
-        # Train Multinomial Naive Bayes
+        # Train Complement Naive Bayes
         self.model.fit(X_train_tfidf, y_train)
         self.is_trained = True
 
@@ -125,6 +154,43 @@ class SentimentModel:
             'processed_text': processed_text
         }
 
+    def predict_batch(self, texts):
+        """
+        Predict sentiment for multiple texts in batch.
+        Returns list of predictions with probabilities.
+        Ideal untuk prediction semua data di dashboard (untuk skripsi).
+        """
+        if not self.is_trained:
+            raise ValueError("Model belum dilatih. Silakan latih model terlebih dahulu.")
+
+        results = []
+        for text in texts:
+            # Preprocess
+            processed_text = preprocess_text(text)
+
+            # Vectorize
+            text_tfidf = self.vectorizer.transform([processed_text])
+
+            # Predict
+            prediction = self.model.predict(text_tfidf)[0]
+            probabilities = self.model.predict_proba(text_tfidf)[0]
+
+            # Map probabilities to labels
+            prob_dict = {}
+            for label, prob in zip(self.model.classes_, probabilities):
+                prob_dict[label] = float(prob)
+
+            confidence = float(max(probabilities))
+
+            results.append({
+                'sentiment': prediction,
+                'confidence': confidence,
+                'probabilities': prob_dict,
+                'processed_text': processed_text
+            })
+
+        return results
+
     def save_model(self):
         """Save trained model and vectorizer to disk."""
         os.makedirs(Config.MODEL_DIR, exist_ok=True)
@@ -133,6 +199,53 @@ class SentimentModel:
         if hasattr(self, 'last_metrics'):
             joblib.dump(self.last_metrics, os.path.join(Config.MODEL_DIR, 'metrics.pkl'))
         print(f"Model saved to {Config.MODEL_DIR}")
+
+    def _create_vectorizer(self, params):
+        return TfidfVectorizer(
+            max_features=params.get('max_features', 5000),
+            ngram_range=params.get('ngram_range', (1, 2)),
+            min_df=params.get('min_df', 5),
+            max_df=params.get('max_df', 0.90),
+            sublinear_tf=params.get('sublinear_tf', False),
+            smooth_idf=params.get('smooth_idf', True),
+            strip_accents='unicode',
+            norm='l2',
+            token_pattern=r'(?u)\b\w+\b'
+        )
+
+    def _select_best_tfidf_params(self, X_train, y_train):
+        """Search TF-IDF parameter grid using a single validation split."""
+        if len(X_train) < 10:
+            return self.tfidf_params
+
+        candidates = [
+            {'max_features': 5000, 'ngram_range': (1, 2), 'min_df': 5, 'max_df': 0.90, 'sublinear_tf': True, 'smooth_idf': True},
+            {'max_features': 8000, 'ngram_range': (1, 2), 'min_df': 5, 'max_df': 0.90, 'sublinear_tf': True, 'smooth_idf': True},
+            {'max_features': 10000, 'ngram_range': (1, 2), 'min_df': 5, 'max_df': 0.90, 'sublinear_tf': True, 'smooth_idf': True},
+        ]
+
+        X_search, X_val, y_search, y_val = train_test_split(
+            X_train, y_train, test_size=0.2, random_state=42, stratify=y_train
+        )
+
+        best_score = -1.0
+        best_params = self.tfidf_params
+
+        for params in candidates:
+            vectorizer = self._create_vectorizer(params)
+            X_search_tfidf = vectorizer.fit_transform(X_search)
+            X_val_tfidf = vectorizer.transform(X_val)
+
+            model = ComplementNB(alpha=self.model.alpha)
+            model.fit(X_search_tfidf, y_search)
+            score = f1_score(y_val, model.predict(X_val_tfidf), average='macro', zero_division=0)
+
+            if score > best_score:
+                best_score = score
+                best_params = params
+
+        print(f"Selected TF-IDF params: {best_params} with macro F1={best_score:.4f}")
+        return best_params
 
     def load_model(self):
         """Load trained model and vectorizer from disk."""
@@ -155,8 +268,8 @@ class SentimentModel:
             'is_trained': self.is_trained,
             'model_exists': os.path.exists(Config.MODEL_PATH),
             'vectorizer_exists': os.path.exists(Config.VECTORIZER_PATH),
-            'model_type': 'Multinomial Naive Bayes',
-            'vectorizer_type': 'TF-IDF (max_features=5000, ngram=1-2)',
+            'model_type': 'Complement Naïve Bayes',
+            'vectorizer_type': f"TF-IDF (max_features={self.tfidf_params['max_features']}, ngram={self.tfidf_params['ngram_range']})",
         }
 
     def reset_model(self):
@@ -164,8 +277,16 @@ class SentimentModel:
         self.is_trained = False
         self.last_trained = None
         self.last_metrics = None
-        self.model = ComplementNB(alpha=0.5)
-        self.vectorizer = TfidfVectorizer(max_features=5000, ngram_range=(1, 2))
+        self.model = ComplementNB(alpha=1.0)
+        self.tfidf_params = {
+            'max_features': 5000,
+            'ngram_range': (1, 2),
+            'min_df': 5,
+            'max_df': 0.90,
+            'sublinear_tf': True,
+            'smooth_idf': True
+        }
+        self.vectorizer = self._create_vectorizer(self.tfidf_params)
         
         files_to_delete = [
             Config.MODEL_PATH,

@@ -1,0 +1,45 @@
+flowchart TD
+  U[User (Browser / Frontend)]
+  UI[Web UI (templates + static JS/CSS)]
+  F[Flask Server\n(routes.py)]
+  Upload[/POST /api/upload-dataset/]
+  Train[/POST /api/train/]
+  Predict[/POST /predict/]
+  Stats[/GET /api/stats & /api/model-evaluation]
+  Preproc[Preprocessing\n(preprocess_text / preprocess_for_display)]
+  ML[SentimentModel\n(TF-IDF -> ComplementNB)]
+  Seed[CSV parsing & rating->label\n(map_rating_to_sentiment)]
+  DB[(Database)\nTrainingData, PredictionHistory, TrainingLog]
+  ModelFiles[(Model files)\nnaive_bayes_model.pkl\ntfidf_vectorizer.pkl, metrics.pkl]
+
+  U -->|interact / klik / upload| UI
+  UI -->|HTTP requests| F
+
+  %% Upload dataset
+  F --> Upload
+  Upload -->|read CSV| Seed
+  Seed -->|map rating -> label, parse tanggal| DB
+  Upload -->|clear old training data| DB
+  Upload -->|delete model files -> set model not trained| ModelFiles
+  Upload -->|log upload| DB
+
+  %% Train
+  F --> Train
+  Train -->|load training rows| DB
+  Train -->|preprocess each text| Preproc
+  Preproc --> ML
+  ML -->|vectorizer.fit + model.fit (oversampling)| ModelFiles
+  ML -->|predict_batch -> nb_predicted_label| DB
+  Train -->|log training| DB
+
+  %% Single predict
+  F --> Predict
+  Predict -->|preprocess_for_display| Preproc
+  Preproc --> ML
+  ML -->|vectorize.transform + predict| F
+  F -->|save PredictionHistory| DB
+
+  %% Dashboard / Stats
+  F --> Stats
+  Stats -->|read training & prediction data| DB
+  Stats -->|use nb_predicted_label untuk analisis| ML

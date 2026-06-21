@@ -1,0 +1,24 @@
+:root{
+  --bg:#0f172a; --card:#0b1220; --accent:#1158f0; --muted:#94a3b8; --pos:#10b981; --neg:#ef4444; --net:#94a3b8
+}
+*{box-sizing:border-box;font-family:Inter, Arial, sans-serif}
+body{margin:0;background:var(--bg);color:#e6eef8}
+.container{max-width:1100px;margin:32px auto;padding:0 16px}
+.header{display:flex;align-items:center;justify-content:space-between;padding:12px 0}
+.nav{display:flex;gap:12px}
+.nav a{color:var(--muted);text-decoration:none;padding:8px 12px;border-radius:8px}
+.nav a.active{background:rgba(255,255,255,0.04);color:#fff}
+.card{background:var(--card);border-radius:12px;padding:16px;margin-bottom:16px}
+.grid{display:grid;grid-template-columns:2fr 1fr;gap:16px}
+.hero{padding:24px}
+.upload{border:2px dashed rgba(255,255,255,0.04);padding:18px;border-radius:8px;text-align:center;cursor:pointer}
+.input-area textarea{width:100%;height:140px;padding:12px;border-radius:8px;border:1px solid rgba(255,255,255,0.03);background:#071427;color:#e6eef8}
+.btn{background:var(--accent);color:#fff;padding:10px 14px;border-radius:8px;border:none;cursor:pointer}
+.result{display:flex;gap:12px;align-items:center}
+.badge{padding:8px 12px;border-radius:999px;font-weight:700}
+.badge.positif{background:rgba(16,185,129,0.12);color:var(--pos)}
+.badge.netral{background:rgba(148,163,184,0.06);color:var(--net)}
+.badge.negatif{background:rgba(239,68,68,0.08);color:var(--neg)}
+.preprocessing pre{white-space:pre-wrap;background:#061426;padding:12px;border-radius:8px;color:var(--muted)}
+.footer{color:var(--muted);font-size:13px;text-align:center;margin-top:32px}
+@media(max-width:900px){.grid{grid-template-columns:1fr}.hero{padding:16px}}

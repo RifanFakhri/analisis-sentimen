@@ -1,0 +1,232 @@
+{% extends "base.html" %}
+{% block title %}Laporan / Report{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero" id="hero-section">
+    <div class="hero-bg-shapes">
+        <div class="shape shape-1"></div>
+        <div class="shape shape-2"></div>
+        <div class="shape shape-3"></div>
+    </div>
+    <div class="container">
+        <div class="hero-content">
+            <h1 class="hero-title">
+                <span class="gradient-text">Laporan</span> Analisis Sentimen
+            </h1>
+            <p class="hero-subtitle">
+                Ringkasan lengkap hasil analisis sentimen dan statistik dari dataset yang telah diproses.
+            </p>
+        </div>
+    </div>
+</section>
+
+<!-- Report Section -->
+<section class="section" id="report-section">
+    <div class="container">
+        <!-- Summary Cards -->
+        <div class="cards-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+            <div class="summary-card glass-card">
+                <div class="card-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; margin-bottom: 1rem;">
+                    <i class="fas fa-file-alt"></i>
+                </div>
+                <h3 style="margin: 0.5rem 0; font-size: 18px;">Total Dataset</h3>
+                <p style="margin: 0.5rem 0; font-size: 28px; font-weight: 700; background: var(--primary-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">-</p>
+                <p style="margin: 0; font-size: 14px; opacity: 0.7;">Jumlah data yang dianalisis</p>
+            </div>
+            <div class="summary-card glass-card">
+                <div class="card-icon" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; margin-bottom: 1rem;">
+                    <i class="fas fa-smile"></i>
+                </div>
+                <h3 style="margin: 0.5rem 0; font-size: 18px;">Sentimen Positif</h3>
+                <p style="margin: 0.5rem 0; font-size: 28px; font-weight: 700; color: #10b981;">-</p>
+                <p style="margin: 0; font-size: 14px; opacity: 0.7;">Data dengan sentimen positif</p>
+            </div>
+            <div class="summary-card glass-card">
+                <div class="card-icon" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; margin-bottom: 1rem;">
+                    <i class="fas fa-meh"></i>
+                </div>
+                <h3 style="margin: 0.5rem 0; font-size: 18px;">Sentimen Netral</h3>
+                <p style="margin: 0.5rem 0; font-size: 28px; font-weight: 700; color: #f59e0b;">-</p>
+                <p style="margin: 0; font-size: 14px; opacity: 0.7;">Data dengan sentimen netral</p>
+            </div>
+            <div class="summary-card glass-card">
+                <div class="card-icon" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); color: white; width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; margin-bottom: 1rem;">
+                    <i class="fas fa-frown"></i>
+                </div>
+                <h3 style="margin: 0.5rem 0; font-size: 18px;">Sentimen Negatif</h3>
+                <p style="margin: 0.5rem 0; font-size: 28px; font-weight: 700; color: #ef4444;">-</p>
+                <p style="margin: 0; font-size: 14px; opacity: 0.7;">Data dengan sentimen negatif</p>
+            </div>
+        </div>
+
+        <!-- Report Content -->
+        <div class="report-container glass-card">
+            <div class="card-header">
+                <div class="card-icon">
+                    <i class="fas fa-chart-pie"></i>
+                </div>
+                <div>
+                    <h2 class="card-title">Laporan Lengkap</h2>
+                    <p class="card-desc">Statistik dan analisis mendetail dari hasil klasifikasi sentimen</p>
+                </div>
+            </div>
+
+            <!-- Tab Navigation -->
+            <div class="report-tabs" style="display: flex; gap: 1rem; border-bottom: 2px solid rgba(255,255,255,0.1); margin-bottom: 2rem; flex-wrap: wrap;">
+                <button class="report-tab active" data-tab="overview" style="padding: 0.75rem 1.5rem; background: none; border: none; color: white; cursor: pointer; border-bottom: 3px solid transparent; transition: all 0.3s;">
+                    <i class="fas fa-chart-bar"></i> Overview
+                </button>
+                <button class="report-tab" data-tab="distribution" style="padding: 0.75rem 1.5rem; background: none; border: none; color: white; cursor: pointer; border-bottom: 3px solid transparent; transition: all 0.3s;">
+                    <i class="fas fa-chart-pie"></i> Distribusi
+                </button>
+                <button class="report-tab" data-tab="details" style="padding: 0.75rem 1.5rem; background: none; border: none; color: white; cursor: pointer; border-bottom: 3px solid transparent; transition: all 0.3s;">
+                    <i class="fas fa-list"></i> Detail Data
+                </button>
+            </div>
+
+            <!-- Tab Content -->
+            <div id="overview-content" class="tab-content" style="display: block;">
+                <div style="background: rgba(255,255,255,0.05); padding: 1.5rem; border-radius: 8px; margin-bottom: 1.5rem;">
+                    <h3 style="margin-top: 0;">Ringkasan Analisis</h3>
+                    <ul style="list-style: none; padding: 0; margin: 1rem 0;">
+                        <li style="padding: 0.75rem 0; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                            <strong>Model:</strong> Complement Naïve Bayes
+                        </li>
+                        <li style="padding: 0.75rem 0; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                            <strong>Preprocessing:</strong> Case folding, Tokenisasi, Stopword removal, Stemming
+                        </li>
+                        <li style="padding: 0.75rem 0; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                            <strong>Vectorization:</strong> TF-IDF
+                        </li>
+                        <li style="padding: 0.75rem 0;">
+                            <strong>Dataset:</strong> Ulasan Pulau Merak - Bahasa Indonesia
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <div id="distribution-content" class="tab-content" style="display: none;">
+                <div style="background: rgba(255,255,255,0.05); padding: 1.5rem; border-radius: 8px;">
+                    <h3 style="margin-top: 0;">Distribusi Sentimen</h3>
+                    <p style="opacity: 0.7; margin-bottom: 1.5rem;">Persentase data berdasarkan klasifikasi sentimen</p>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                        <div style="text-align: center;">
+                            <div style="font-size: 32px; font-weight: 700; color: #10b981; margin-bottom: 0.5rem;">-</div>
+                            <p style="margin: 0; opacity: 0.8;">Positif (%)</p>
+                        </div>
+                        <div style="text-align: center;">
+                            <div style="font-size: 32px; font-weight: 700; color: #f59e0b; margin-bottom: 0.5rem;">-</div>
+                            <p style="margin: 0; opacity: 0.8;">Netral (%)</p>
+                        </div>
+                        <div style="text-align: center;">
+                            <div style="font-size: 32px; font-weight: 700; color: #ef4444; margin-bottom: 0.5rem;">-</div>
+                            <p style="margin: 0; opacity: 0.8;">Negatif (%)</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="details-content" class="tab-content" style="display: none;">
+                <div style="background: rgba(255,255,255,0.05); padding: 1.5rem; border-radius: 8px; overflow-x: auto;">
+                    <h3 style="margin-top: 0;">Sampel Data Hasil Klasifikasi</h3>
+                    <p style="opacity: 0.7; margin-bottom: 1.5rem;">Contoh data dari setiap kategori sentimen</p>
+                    <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+                        <thead>
+                            <tr style="border-bottom: 2px solid rgba(255,255,255,0.2);">
+                                <th style="text-align: left; padding: 1rem; color: rgba(255,255,255,0.8);">Teks</th>
+                                <th style="text-align: center; padding: 1rem; color: rgba(255,255,255,0.8);">Sentimen</th>
+                                <th style="text-align: center; padding: 1rem; color: rgba(255,255,255,0.8);">Rating</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">
+                                <td colspan="3" style="padding: 2rem; text-align: center; opacity: 0.6;">Data akan ditampilkan setelah model dilatih</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Export Section -->
+        <div class="export-section glass-card" style="margin-top: 2rem;">
+            <div class="card-header">
+                <div class="card-icon">
+                    <i class="fas fa-download"></i>
+                </div>
+                <div>
+                    <h2 class="card-title">Export Laporan</h2>
+                    <p class="card-desc">Unduh laporan dalam berbagai format</p>
+                </div>
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem;">
+                <button onclick="exportReportPDF()" style="padding: 1rem; background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 8px; color: white; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; justify-content: center; gap: 0.5rem; font-weight: 500;">
+                    <i class="fas fa-file-pdf"></i> PDF
+                </button>
+                <button onclick="exportReportExcel()" style="padding: 1rem; background: rgba(34, 197, 94, 0.1); border: 1px solid rgba(34, 197, 94, 0.3); border-radius: 8px; color: white; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; justify-content: center; gap: 0.5rem; font-weight: 500;">
+                    <i class="fas fa-file-excel"></i> Excel
+                </button>
+                <button onclick="exportReportCSV()" style="padding: 1rem; background: rgba(168, 85, 247, 0.1); border: 1px solid rgba(168, 85, 247, 0.3); border-radius: 8px; color: white; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; justify-content: center; gap: 0.5rem; font-weight: 500;">
+                    <i class="fas fa-file-csv"></i> CSV
+                </button>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+    .report-tab.active {
+        border-bottom-color: var(--primary-color);
+        color: var(--primary-color);
+    }
+    
+    .report-tab:hover {
+        opacity: 0.8;
+    }
+    
+    .tab-content {
+        animation: fadeIn 0.3s ease;
+    }
+    
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+        }
+        to {
+            opacity: 1;
+        }
+    }
+</style>
+
+<script>
+    // Tab switching functionality
+    document.querySelectorAll('.report-tab').forEach(tab => {
+        tab.addEventListener('click', function() {
+            const tabName = this.getAttribute('data-tab');
+            
+            // Hide all contents
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.style.display = 'none';
+            });
+            
+            // Remove active class from all tabs
+            document.querySelectorAll('.report-tab').forEach(t => {
+                t.style.borderBottomColor = 'transparent';
+                t.style.color = 'white';
+            });
+            
+            // Show selected content
+            document.getElementById(tabName + '-content').style.display = 'block';
+            
+            // Add active class to clicked tab
+            this.style.borderBottomColor = 'var(--primary-color)';
+            this.style.color = 'var(--primary-color)';
+        });
+    });
+</script>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/report.js') }}"></script>
+{% endblock %}

@@ -47,11 +47,17 @@ class TrainingData(db.Model):
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     text = db.Column(db.Text, nullable=False)
-    label = db.Column(db.String(20), nullable=False)  # positif, negatif, netral
+    label = db.Column(db.String(20), nullable=False)  # positif, negatif, netral (dari rating)
     rating = db.Column(db.Integer, nullable=True)
     tahun = db.Column(db.Integer, nullable=True)
     bulan = db.Column(db.Integer, nullable=True) # 1-12
     tanggal_asli = db.Column(db.Date, nullable=True)
+    # Kolom untuk menyimpan prediksi Naive Bayes (UNTUK SKRIPSI)
+    nb_predicted_label = db.Column(db.String(20), nullable=True)  # Hasil prediksi NB
+    nb_confidence = db.Column(db.Float, nullable=True)  # Confidence score prediksi
+    nb_positif_prob = db.Column(db.Float, nullable=True)  # Probabilitas positif dari NB
+    nb_negatif_prob = db.Column(db.Float, nullable=True)  # Probabilitas negatif dari NB
+    nb_netral_prob = db.Column(db.Float, nullable=True)  # Probabilitas netral dari NB
     created_at = db.Column(
         db.DateTime,
         default=lambda: datetime.now(timezone.utc),
