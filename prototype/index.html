@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>SentimentAI — Prototype</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="container">
+    <header class="header">
+      <div>
+        <h2>SentimentAI</h2>
+        <div class="nav"><a href="index.html" class="active">Beranda</a><a href="dashboard.html">Dashboard</a><a href="train.html">Training</a><a href="history.html">Histori</a></div>
+      </div>
+      <div style="text-align:right;color:var(--muted)">Model: <strong id="model-status">Not Trained</strong></div>
+    </header>
+
+    <section class="card hero grid">
+      <div>
+        <h1>Analisis Sentimen Ulasan</h1>
+        <p style="color:var(--muted)">Masukkan teks ulasan untuk melihat prediksi sentimen dan langkah preprocessing.</p>
+
+        <div class="card upload" onclick="document.getElementById('csv-file').click()">
+          <input id="csv-file" type="file" accept=".csv" style="display:none" />
+          <div id="file-name">Klik atau drag CSV untuk upload</div>
+        </div>
+
+        <div class="card input-area" style="margin-top:12px">
+          <textarea id="input-text" placeholder="Contoh: Pantainya bersih, pemandangan indah."></textarea>
+          <div style="display:flex;justify-content:flex-end;margin-top:8px"><button class="btn" onclick="predictPrototype()">Analisis Sentimen</button></div>
+        </div>
+      </div>
+
+      <aside>
+        <div class="card result">
+          <div>
+            <div id="sentiment-badge" class="badge netral">NETRAL</div>
+            <div style="margin-top:8px">Confidence: <strong id="confidence">-</strong></div>
+          </div>
+        </div>
+
+        <div class="card preprocessing">
+          <h4>Tahapan Preprocessing</h4>
+          <pre id="preproc">-</pre>
+        </div>
+      </aside>
+    </section>
+
+    <div class="footer">Prototype statis — gunakan untuk demonstrasi UI.</div>
+  </div>
+  <script src="script.js"></script>
+</body>
+</html>

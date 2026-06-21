@@ -26,6 +26,12 @@ async function loadDashboardData() {
         const response = await fetch(`/api/stats?sentiment=${sentiment}&range=${range}`);
         const data = await response.json();
 
+        // Debug: print trend and distribution payloads to browser console
+        try {
+            console.log('DEBUG /api/stats -> trend:', data.trend);
+            console.log('DEBUG /api/stats -> distribution:', data.distribution);
+        } catch (e) { /* ignore */ }
+
         if (data.error) {
             console.error('Error fetching stats:', data.error);
             return;
@@ -45,9 +51,11 @@ async function loadDashboardData() {
 function renderStats(summary, metrics) {
     document.getElementById('sum-total').textContent = summary.total_reviews.toLocaleString();
     document.getElementById('sum-pos-count').textContent = summary.pos_count.toLocaleString();
+    document.getElementById('sum-netral-count').textContent = summary.netral_count.toLocaleString();
     document.getElementById('sum-neg-count').textContent = summary.neg_count.toLocaleString();
     
     document.getElementById('sum-pos-percent').textContent = summary.pos_percent + '%';
+    document.getElementById('sum-netral-percent').textContent = summary.netral_percent + '%';
     document.getElementById('sum-neg-percent').textContent = summary.neg_percent + '%';
 
     const accEl = document.getElementById('sum-accuracy');
@@ -127,6 +135,14 @@ function renderCharts(data) {
                     categoryPercentage: 0.7
                 },
                 {
+                    label: 'Netral',
+                    data: data.trend.netral,
+                    backgroundColor: '#f59e0b',
+                    borderRadius: 4,
+                    barPercentage: 0.8,
+                    categoryPercentage: 0.7
+                },
+                {
                     label: 'Negatif',
                     data: data.trend.negatif,
                     backgroundColor: '#ef4444',
@@ -153,13 +169,13 @@ function renderCharts(data) {
     const ctxDist = document.getElementById('distributionChart').getContext('2d');
     if (window.myDistChart) window.myDistChart.destroy();
     
-    window.myDistChart = new Chart(ctxDist, {
+        window.myDistChart = new Chart(ctxDist, {
         type: 'doughnut',
         data: {
             labels: data.distribution.labels,
             datasets: [{
                 data: data.distribution.values,
-                backgroundColor: ['#ef4444', '#475569', '#10b981'],
+                backgroundColor: ['#ef4444', '#f59e0b', '#10b981'],
                 borderWidth: 2,
                 borderColor: '#1e293b'
             }]
@@ -178,10 +194,25 @@ function renderCharts(data) {
 function renderSamples(samples) {
     const list = document.getElementById('neg-samples-list');
     list.innerHTML = '';
+    
+    if (!samples || samples.length === 0) {
+        list.innerHTML = '<div class="sample-box">Belum ada data</div>';
+        return;
+    }
+    
     samples.forEach(sample => {
         const div = document.createElement('div');
         div.className = 'sample-box';
-        div.textContent = `"${sample}"`;
+        
+        // Handle both object and string formats
+        let displayText = '';
+        if (typeof sample === 'object' && sample !== null) {
+            displayText = sample.text || JSON.stringify(sample);
+        } else {
+            displayText = sample.toString();
+        }
+        
+        div.textContent = `"${displayText}"`;
         list.appendChild(div);
     });
 }

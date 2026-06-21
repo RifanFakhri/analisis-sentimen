@@ -1,0 +1,1101 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UI Wireframe Mockup - Sistem Analisis Sentimen Pulau Merak</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #f3f4f6;
+            color: #1f2937;
+        }
+
+        /* Navbar */
+        .navbar {
+            background: white;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .navbar-brand {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #3b82f6;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: #6b7280;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+
+        .nav-links a:hover,
+        .nav-links a.active {
+            color: #3b82f6;
+        }
+
+        /* Container */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* Section Title */
+        .section-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: #1f2937;
+        }
+
+        .section-subtitle {
+            color: #6b7280;
+            margin-bottom: 2rem;
+        }
+
+        /* Cards */
+        .card {
+            background: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+        }
+
+        .card-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: #1f2937;
+        }
+
+        /* Stat Cards Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #3b82f6;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            font-size: 0.875rem;
+            color: #6b7280;
+            font-weight: 500;
+        }
+
+        .stat-badge {
+            display: inline-block;
+            margin-top: 0.5rem;
+            padding: 0.25rem 0.75rem;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .badge-success {
+            background: #ecfdf5;
+            color: #10b981;
+        }
+
+        .badge-neutral {
+            background: #f3f4f6;
+            color: #6b7280;
+        }
+
+        .badge-danger {
+            background: #fee2e2;
+            color: #ef4444;
+        }
+
+        /* Form Elements */
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #1f2937;
+            font-size: 0.95rem;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-family: inherit;
+            transition: border-color 0.2s;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        textarea.form-control {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-block;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+            text-align: center;
+        }
+
+        .btn-primary {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2563eb;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 6px rgba(59, 130, 246, 0.3);
+        }
+
+        .btn-secondary {
+            background: #e5e7eb;
+            color: #1f2937;
+        }
+
+        .btn-secondary:hover {
+            background: #d1d5db;
+        }
+
+        .btn-success {
+            background: #10b981;
+            color: white;
+        }
+
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+        }
+
+        /* Grid Layout */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        /* Result Card */
+        .result-card {
+            background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+            border: 2px solid #10b981;
+            border-radius: 12px;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .sentiment-label {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+
+        .sentiment-positive {
+            color: #10b981;
+        }
+
+        .sentiment-negative {
+            color: #ef4444;
+        }
+
+        .sentiment-neutral {
+            color: #6b7280;
+        }
+
+        /* Progress Bar */
+        .progress {
+            background: #e5e7eb;
+            border-radius: 999px;
+            height: 12px;
+            overflow: hidden;
+            margin-bottom: 1rem;
+        }
+
+        .progress-bar {
+            background: #3b82f6;
+            height: 100%;
+            transition: width 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 0.75rem;
+        }
+
+        .progress-bar-success {
+            background: #10b981;
+        }
+
+        .progress-bar-danger {
+            background: #ef4444;
+        }
+
+        .progress-bar-warning {
+            background: #f59e0b;
+        }
+
+        /* Distribution List */
+        .distribution-list {
+            list-style: none;
+        }
+
+        .distribution-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .distribution-label {
+            min-width: 100px;
+            font-weight: 500;
+            color: #1f2937;
+        }
+
+        .distribution-bar {
+            flex: 1;
+            margin: 0 1rem;
+        }
+
+        .distribution-value {
+            min-width: 50px;
+            text-align: right;
+            font-weight: 600;
+            color: #3b82f6;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .navbar {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .nav-links {
+                flex-direction: column;
+                gap: 1rem;
+                width: 100%;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .container {
+                padding: 1rem;
+            }
+
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Demo Sections */
+        .demo-section {
+            margin-bottom: 3rem;
+        }
+
+        .page-selector {
+            background: white;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .page-tab {
+            padding: 0.5rem 1rem;
+            border: 1px solid #e5e7eb;
+            background: #f9fafb;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .page-tab.active {
+            background: #3b82f6;
+            color: white;
+            border-color: #3b82f6;
+        }
+
+        .page-tab:hover {
+            border-color: #3b82f6;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        /* Color Legend */
+        .color-legend {
+            display: flex;
+            gap: 2rem;
+            flex-wrap: wrap;
+            margin-bottom: 2rem;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+        }
+
+        .color-positive {
+            background: #10b981;
+        }
+
+        .color-negative {
+            background: #ef4444;
+        }
+
+        .color-neutral {
+            background: #6b7280;
+        }
+
+        .color-primary {
+            background: #3b82f6;
+        }
+
+        /* Confirmation Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 200;
+        }
+
+        .modal.active {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 8px;
+            padding: 2rem;
+            max-width: 500px;
+            box-shadow: 0 20px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .modal-header {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+
+        .modal-body {
+            color: #6b7280;
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+        }
+
+        .modal-footer {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+        }
+
+        /* Table */
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        .table thead {
+            background: #f9fafb;
+        }
+
+        .table th {
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+            color: #1f2937;
+            border-bottom: 2px solid #e5e7eb;
+        }
+
+        .table td {
+            padding: 1rem;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .table tbody tr:hover {
+            background: #f9fafb;
+        }
+
+        /* Aspect Tags */
+        .tag {
+            display: inline-block;
+            background: #e0e7ff;
+            color: #3b82f6;
+            padding: 0.25rem 0.75rem;
+            border-radius: 999px;
+            font-size: 0.875rem;
+            margin-right: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .tag-negative {
+            background: #fee2e2;
+            color: #ef4444;
+        }
+
+        .tag-positive {
+            background: #d1fae5;
+            color: #10b981;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="navbar-brand">🏝️ Analisis Sentimen Pulau Merak</div>
+        <ul class="nav-links">
+            <li><a href="#home" class="page-link active" onclick="switchPage('home')">Beranda</a></li>
+            <li><a href="#training" class="page-link" onclick="switchPage('training')">Training</a></li>
+            <li><a href="#dashboard" class="page-link" onclick="switchPage('dashboard')">Dashboard</a></li>
+            <li><a href="#history" class="page-link" onclick="switchPage('history')">History</a></li>
+        </ul>
+    </nav>
+
+    <!-- Page Selector -->
+    <div class="container">
+        <div class="page-selector">
+            <button class="page-tab active" onclick="switchPage('home')">📝 Halaman Utama</button>
+            <button class="page-tab" onclick="switchPage('training')">🎓 Training</button>
+            <button class="page-tab" onclick="switchPage('dashboard')">📊 Dashboard</button>
+            <button class="page-tab" onclick="switchPage('history')">📋 History</button>
+            <button class="page-tab" onclick="switchPage('design')">🎨 Design System</button>
+        </div>
+    </div>
+
+    <!-- HOME PAGE -->
+    <div id="home" class="page-content">
+        <div class="container">
+            <h1 class="section-title">Analisis Sentimen Pulau Merak</h1>
+            <p class="section-subtitle">Masukkan review atau upload dataset untuk analisis sentimen real-time</p>
+
+            <!-- Input Section -->
+            <div class="grid-2">
+                <div class="card">
+                    <div class="card-title">✍️ Input Teks</div>
+                    <form>
+                        <div class="form-group">
+                            <label class="form-label">Masukkan Review atau Ulasan</label>
+                            <textarea class="form-control" placeholder="Masukkan review tentang Pulau Merak..."></textarea>
+                            <small style="color: #6b7280; margin-top: 0.5rem;">Maksimal 500 karakter</small>
+                        </div>
+                        <button type="button" class="btn btn-primary" onclick="showResultDemo()">🔍 Analisis Sentimen</button>
+                    </form>
+                </div>
+
+                <div class="card">
+                    <div class="card-title">📁 Upload Dataset</div>
+                    <div style="border: 2px dashed #e5e7eb; padding: 2rem; border-radius: 8px; text-align: center; background: #f9fafb;">
+                        <p style="font-size: 3rem; margin-bottom: 1rem;">📥</p>
+                        <p style="font-weight: 500; margin-bottom: 0.5rem;">Drag & drop file CSV di sini</p>
+                        <p style="font-size: 0.875rem; color: #6b7280; margin-bottom: 1rem;">atau</p>
+                        <button type="button" class="btn btn-secondary">Pilih File</button>
+                        <p style="font-size: 0.875rem; color: #6b7280; margin-top: 1rem;">Format: CSV dengan kolom 'text' dan 'label'</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Result Demo -->
+            <div id="result-demo" class="hidden">
+                <div class="card">
+                    <div class="card-title">✅ Hasil Prediksi</div>
+                    
+                    <div class="grid-2">
+                        <div class="result-card">
+                            <div class="sentiment-label sentiment-positive">POSITIF</div>
+                            <div style="font-size: 3rem; margin-bottom: 1rem;">😊</div>
+                            <div style="font-size: 1.25rem; font-weight: 700; color: #10b981;">Score: 0.92</div>
+                        </div>
+
+                        <div>
+                            <div style="margin-bottom: 1.5rem;">
+                                <div style="font-weight: 600; margin-bottom: 0.5rem;">Confidence: 92%</div>
+                                <div class="progress">
+                                    <div class="progress-bar progress-bar-success" style="width: 92%"></div>
+                                </div>
+                            </div>
+
+                            <div style="font-weight: 600; margin-bottom: 1rem;">Distribusi Probabilitas:</div>
+                            <ul class="distribution-list">
+                                <li class="distribution-item">
+                                    <span class="distribution-label">Positif</span>
+                                    <div class="distribution-bar">
+                                        <div class="progress">
+                                            <div class="progress-bar progress-bar-success" style="width: 92%"></div>
+                                        </div>
+                                    </div>
+                                    <span class="distribution-value">92%</span>
+                                </li>
+                                <li class="distribution-item">
+                                    <span class="distribution-label">Netral</span>
+                                    <div class="distribution-bar">
+                                        <div class="progress">
+                                            <div class="progress-bar" style="width: 6%; background: #f59e0b;"></div>
+                                        </div>
+                                    </div>
+                                    <span class="distribution-value">6%</span>
+                                </li>
+                                <li class="distribution-item">
+                                    <span class="distribution-label">Negatif</span>
+                                    <div class="distribution-bar">
+                                        <div class="progress">
+                                            <div class="progress-bar progress-bar-danger" style="width: 2%"></div>
+                                        </div>
+                                    </div>
+                                    <span class="distribution-value">2%</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <hr style="margin: 2rem 0; border: none; border-top: 1px solid #e5e7eb;">
+
+                    <div>
+                        <div style="font-weight: 600; margin-bottom: 1rem;">📚 Langkah Preprocessing:</div>
+                        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                            <span class="tag">☑ Lowercase</span>
+                            <span class="tag">☑ Cleaning</span>
+                            <span class="tag">☑ Tokenization</span>
+                            <span class="tag">☑ Stopword</span>
+                            <span class="tag">☑ Stemming</span>
+                        </div>
+                        <p style="margin-top: 1rem; font-size: 0.95rem; color: #6b7280;">
+                            <strong>Hasil Tokenisasi:</strong> [bagus] [pelayanan] [ramah] [makanan] [enak] [harga] [wajar] [lokasi] [strategis]
+                        </p>
+                    </div>
+
+                    <button type="button" class="btn btn-secondary" style="margin-top: 1rem;" onclick="hideResultDemo()">Tutup</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TRAINING PAGE -->
+    <div id="training" class="page-content hidden">
+        <div class="container">
+            <h1 class="section-title">Training Model</h1>
+            <p class="section-subtitle">Kelola dataset, atur parameter, dan latih model machine learning</p>
+
+            <!-- Statistics -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value">1,250</div>
+                    <div class="stat-label">Total Reviews</div>
+                    <span class="stat-badge badge-success">Siap Training</span>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">450</div>
+                    <div class="stat-label">Positif (36%)</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">450</div>
+                    <div class="stat-label">Negatif (36%)</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">350</div>
+                    <div class="stat-label">Netral (28%)</div>
+                </div>
+            </div>
+
+            <!-- Training Configuration -->
+            <div class="grid-2">
+                <div class="card">
+                    <div class="card-title">⚙️ Parameter Training</div>
+                    <form>
+                        <div class="form-group">
+                            <label class="form-label">Epoch</label>
+                            <input type="number" class="form-control" value="10" min="1" max="100">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Batch Size</label>
+                            <input type="number" class="form-control" value="32" min="8" max="128">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Learning Rate</label>
+                            <input type="number" class="form-control" value="0.001" step="0.0001">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Model Type</label>
+                            <select class="form-control">
+                                <option>Naive Bayes</option>
+                                <option>Logistic Regression</option>
+                                <option>SVM</option>
+                            </select>
+                        </div>
+                        <button type="button" class="btn btn-primary" onclick="startTraining()">▶️ Mulai Training</button>
+                    </form>
+                </div>
+
+                <div class="card">
+                    <div class="card-title">📊 Dataset Configuration</div>
+                    <div style="margin-bottom: 1.5rem;">
+                        <div style="font-weight: 600; margin-bottom: 0.5rem;">Data Split:</div>
+                        <p style="color: #6b7280; margin-bottom: 0.5rem;">Training: 70% (875 records)</p>
+                        <p style="color: #6b7280; margin-bottom: 0.5rem;">Validation: 15% (187 records)</p>
+                        <p style="color: #6b7280;">Testing: 15% (188 records)</p>
+                    </div>
+                    <hr style="margin: 1.5rem 0; border: none; border-top: 1px solid #e5e7eb;">
+                    <div style="font-weight: 600; margin-bottom: 0.5rem;">Preprocessing:</div>
+                    <div style="font-size: 0.95rem;">
+                        <label style="display: block; margin-bottom: 0.5rem;"><input type="checkbox" checked> Lowercase</label>
+                        <label style="display: block; margin-bottom: 0.5rem;"><input type="checkbox" checked> Cleaning</label>
+                        <label style="display: block; margin-bottom: 0.5rem;"><input type="checkbox" checked> Tokenization</label>
+                        <label style="display: block; margin-bottom: 0.5rem;"><input type="checkbox" checked> Stopword Removal</label>
+                        <label style="display: block;"><input type="checkbox" checked> Stemming</label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Training Results (Hidden by default) -->
+            <div id="training-results" class="hidden">
+                <div class="card" style="background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%); border: 2px solid #10b981;">
+                    <div class="card-title">✅ Training Selesai!</div>
+                    
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-value" style="color: #10b981;">88.4%</div>
+                            <div class="stat-label">Accuracy</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" style="color: #10b981;">87.2%</div>
+                            <div class="stat-label">Precision</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" style="color: #10b981;">88.1%</div>
+                            <div class="stat-label">Recall</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" style="color: #10b981;">87.6%</div>
+                            <div class="stat-label">F1-Score</div>
+                        </div>
+                    </div>
+
+                    <p style="margin-top: 1rem; color: #6b7280;">
+                        <strong>Classification Report:</strong> Model telah dilatih dengan baik dengan performa yang memuaskan di ketiga kelas sentimen.
+                    </p>
+
+                    <button type="button" class="btn btn-success" style="margin-top: 1rem;">💾 Simpan Model</button>
+                    <button type="button" class="btn btn-secondary" style="margin-top: 1rem;">📥 Export Report</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- DASHBOARD PAGE -->
+    <div id="dashboard" class="page-content hidden">
+        <div class="container">
+            <h1 class="section-title">Dashboard Analytics</h1>
+            <p class="section-subtitle">Visualisasi hasil analisis sentimen dan tren opini</p>
+
+            <!-- Statistics -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value">1,250</div>
+                    <div class="stat-label">Total Reviews</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">36%</div>
+                    <div class="stat-label">Positif (450)</div>
+                    <span class="stat-badge badge-success">↑ 5%</span>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">36%</div>
+                    <div class="stat-label">Negatif (450)</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">88.4%</div>
+                    <div class="stat-label">Model Accuracy</div>
+                </div>
+            </div>
+
+            <!-- Top Aspects -->
+            <div class="grid-2">
+                <div class="card">
+                    <div class="card-title">👍 Top Aspek Positif</div>
+                    <table class="table">
+                        <tbody>
+                            <tr>
+                                <td><strong>Kebersihan</strong></td>
+                                <td style="text-align: right;">280 (62%)</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Pelayanan</strong></td>
+                                <td style="text-align: right;">250 (55%)</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Pemandangan</strong></td>
+                                <td style="text-align: right;">200 (44%)</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Fasilitas</strong></td>
+                                <td style="text-align: right;">180 (40%)</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="card">
+                    <div class="card-title">👎 Top Aspek Negatif</div>
+                    <table class="table">
+                        <tbody>
+                            <tr>
+                                <td><strong>Harga</strong></td>
+                                <td style="text-align: right;">180 (40%)</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Parkir</strong></td>
+                                <td style="text-align: right;">150 (33%)</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Akses</strong></td>
+                                <td style="text-align: right;">120 (26%)</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Kelengkapan</strong></td>
+                                <td style="text-align: right;">90 (20%)</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Sample Reviews -->
+            <div class="card">
+                <div class="card-title">📝 Contoh Ulasan</div>
+                
+                <div style="margin-bottom: 1.5rem; padding: 1rem; background: #f0fdf4; border-radius: 8px; border-left: 4px solid #10b981;">
+                    <div style="font-weight: 600; color: #10b981; margin-bottom: 0.5rem;">★★★★★ POSITIF (92%)</div>
+                    <p style="margin-bottom: 0.5rem;">Pulau Merak sangat indah! Pelayanannya ramah dan makanannya enak. Kebersihan terjaga dengan baik. Harga masih wajar. Pasti akan datang lagi!</p>
+                    <div style="font-size: 0.875rem; color: #6b7280;">
+                        <span class="tag tag-positive">Kebersihan</span>
+                        <span class="tag tag-positive">Pelayanan</span>
+                        <span class="tag tag-positive">Menu</span>
+                        <span style="float: right;">2025-12-15</span>
+                    </div>
+                </div>
+
+                <div style="margin-bottom: 1.5rem; padding: 1rem; background: #fffbeb; border-radius: 8px; border-left: 4px solid #f59e0b;">
+                    <div style="font-weight: 600; color: #f59e0b; margin-bottom: 0.5rem;">★★★ NETRAL (68%)</div>
+                    <p style="margin-bottom: 0.5rem;">Tempat yang cukup bagus untuk dikunjungi. Ada sedikit kekurangan di area parkir, tapi overall lumayan memuaskan.</p>
+                    <div style="font-size: 0.875rem; color: #6b7280;">
+                        <span class="tag">Parkir</span>
+                        <span class="tag">Fasilitas</span>
+                        <span style="float: right;">2025-12-14</span>
+                    </div>
+                </div>
+
+                <div style="padding: 1rem; background: #fef2f2; border-radius: 8px; border-left: 4px solid #ef4444;">
+                    <div style="font-weight: 600; color: #ef4444; margin-bottom: 0.5rem;">★★ NEGATIF (88%)</div>
+                    <p style="margin-bottom: 0.5rem;">Harganya terlalu mahal untuk menu yang ditawarkan. Parkir juga sulit dan kelengkapan fasilitas masih kurang.</p>
+                    <div style="font-size: 0.875rem; color: #6b7280;">
+                        <span class="tag tag-negative">Harga</span>
+                        <span class="tag tag-negative">Parkir</span>
+                        <span class="tag tag-negative">Fasilitas</span>
+                        <span style="float: right;">2025-12-13</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- HISTORY PAGE -->
+    <div id="history" class="page-content hidden">
+        <div class="container">
+            <h1 class="section-title">Prediction History</h1>
+            <p class="section-subtitle">Kelola dan track semua hasil prediksi yang telah dilakukan</p>
+
+            <!-- Search & Filter -->
+            <div class="card">
+                <div class="form-group">
+                    <label class="form-label">🔍 Cari Prediksi</label>
+                    <input type="text" class="form-control" placeholder="Cari teks atau sentimen...">
+                </div>
+                <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1rem;">
+                    <button class="btn btn-primary" style="background: #e5e7eb; color: #1f2937;">Semua</button>
+                    <button class="btn btn-success">Positif</button>
+                    <button class="btn btn-danger">Negatif</button>
+                    <button class="btn" style="background: #f59e0b; color: white;">Netral</button>
+                </div>
+                <div style="color: #6b7280; font-size: 0.95rem;">
+                    Total Records: <strong>1,250</strong> | Page: <strong>1 of 50</strong>
+                </div>
+            </div>
+
+            <!-- History Table -->
+            <div class="card">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Tanggal</th>
+                            <th>Teks</th>
+                            <th>Sentimen</th>
+                            <th>Conf.</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>1</td>
+                            <td>15:30:20</td>
+                            <td style="font-size: 0.9rem;">Pelayanan sangat bagus...</td>
+                            <td><span class="tag tag-positive">Positif</span></td>
+                            <td>92%</td>
+                            <td>
+                                <button class="btn btn-secondary" style="padding: 0.25rem 0.5rem; font-size: 0.85rem;" onclick="openModal()">Detail</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>2</td>
+                            <td>14:45:15</td>
+                            <td style="font-size: 0.9rem;">Parkir sulit, harga mahal...</td>
+                            <td><span class="tag">Netral</span></td>
+                            <td>68%</td>
+                            <td>
+                                <button class="btn btn-secondary" style="padding: 0.25rem 0.5rem; font-size: 0.85rem;">Detail</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>3</td>
+                            <td>13:20:10</td>
+                            <td style="font-size: 0.9rem;">Sangat mengecewakan...</td>
+                            <td><span class="tag tag-negative">Negatif</span></td>
+                            <td>85%</td>
+                            <td>
+                                <button class="btn btn-secondary" style="padding: 0.25rem 0.5rem; font-size: 0.85rem;">Detail</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- DESIGN SYSTEM PAGE -->
+    <div id="design" class="page-content hidden">
+        <div class="container">
+            <h1 class="section-title">Design System</h1>
+            <p class="section-subtitle">Color palette, typography, dan komponen reusable</p>
+
+            <!-- Color Palette -->
+            <div class="card">
+                <div class="card-title">🎨 Palet Warna</div>
+                <div class="color-legend">
+                    <div class="legend-item">
+                        <div class="legend-color color-primary"></div>
+                        <span><strong>Primary Blue</strong><br>#3B82F6</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color color-positive"></div>
+                        <span><strong>Success Green</strong><br>#10B981</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color color-negative"></div>
+                        <span><strong>Error Red</strong><br>#EF4444</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color color-neutral"></div>
+                        <span><strong>Neutral Gray</strong><br>#6B7280</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Buttons -->
+            <div class="card">
+                <div class="card-title">🔘 Button Variants</div>
+                <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                    <button class="btn btn-primary">Primary Button</button>
+                    <button class="btn btn-secondary">Secondary Button</button>
+                    <button class="btn btn-success">Success Button</button>
+                    <button class="btn btn-danger">Danger Button</button>
+                    <button class="btn" disabled>Disabled Button</button>
+                </div>
+            </div>
+
+            <!-- Tags & Badges -->
+            <div class="card">
+                <div class="card-title">🏷️ Tags & Badges</div>
+                <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                    <span class="tag">Default Tag</span>
+                    <span class="tag tag-positive">Positive Tag</span>
+                    <span class="tag tag-negative">Negative Tag</span>
+                    <span class="stat-badge badge-success">Success</span>
+                    <span class="stat-badge badge-neutral">Neutral</span>
+                    <span class="stat-badge badge-danger">Error</span>
+                </div>
+            </div>
+
+            <!-- Responsive Grid -->
+            <div class="card">
+                <div class="card-title">📱 Responsive Grid Examples</div>
+                <p style="margin-bottom: 1rem; color: #6b7280;">
+                    Resize browser window untuk melihat responsive behavior
+                </p>
+                <div class="stats-grid">
+                    <div style="background: #e0e7ff; padding: 2rem; border-radius: 8px; text-align: center;">Grid Item 1</div>
+                    <div style="background: #d1fae5; padding: 2rem; border-radius: 8px; text-align: center;">Grid Item 2</div>
+                    <div style="background: #fee2e2; padding: 2rem; border-radius: 8px; text-align: center;">Grid Item 3</div>
+                    <div style="background: #fef3c7; padding: 2rem; border-radius: 8px; text-align: center;">Grid Item 4</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Detail Modal -->
+    <div id="detailModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                Detail Prediksi
+                <button style="float: right; background: none; border: none; font-size: 1.5rem; cursor: pointer;" onclick="closeModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <p><strong>Teks Asli:</strong></p>
+                <p style="margin-bottom: 1rem; padding: 0.75rem; background: #f9fafb; border-radius: 6px;">
+                    Pulau Merak sangat indah dengan pemandangan yang memukau, pelayanannya ramah, makanannya enak, dan harga masih wajar.
+                </p>
+                
+                <p><strong>Hasil Prediksi:</strong> <span class="tag tag-positive">POSITIF (92%)</span></p>
+                
+                <p><strong>Token Setelah Preprocessing:</strong></p>
+                <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1rem;">
+                    <span class="tag">[pulau]</span>
+                    <span class="tag">[merak]</span>
+                    <span class="tag">[indah]</span>
+                    <span class="tag">[pemandang]</span>
+                    <span class="tag">[memukau]</span>
+                    <span class="tag">[pelayan]</span>
+                    <span class="tag">[ramah]</span>
+                    <span class="tag">[makanan]</span>
+                    <span class="tag">[enak]</span>
+                    <span class="tag">[harga]</span>
+                    <span class="tag">[wajar]</span>
+                </div>
+                
+                <p><strong>Waktu Prediksi:</strong> 2025-12-15 15:30:20 <br>
+                <strong>Processing Time:</strong> 234ms</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal()">Tutup</button>
+                <button class="btn btn-primary">Cetak</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function switchPage(page) {
+            // Hide all pages
+            document.querySelectorAll('.page-content').forEach(el => el.classList.add('hidden'));
+            
+            // Show selected page
+            document.getElementById(page).classList.remove('hidden');
+            
+            // Update active tab
+            document.querySelectorAll('.page-tab, .nav-links a').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll(`[onclick*="${page}"]`).forEach(el => el.classList.add('active'));
+            
+            // Scroll to top
+            window.scrollTo(0, 0);
+        }
+
+        function showResultDemo() {
+            document.getElementById('result-demo').classList.remove('hidden');
+            document.getElementById('result-demo').scrollIntoView({behavior: 'smooth'});
+        }
+
+        function hideResultDemo() {
+            document.getElementById('result-demo').classList.add('hidden');
+        }
+
+        function startTraining() {
+            alert('Training dimulai! Simulasi progress bar akan ditampilkan.');
+            document.getElementById('training-results').classList.remove('hidden');
+            document.getElementById('training-results').scrollIntoView({behavior: 'smooth'});
+        }
+
+        function openModal() {
+            document.getElementById('detailModal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('detailModal').classList.remove('active');
+        }
+
+        // Close modal on outside click
+        document.getElementById('detailModal').addEventListener('click', function(e) {
+            if (e.target === this) closeModal();
+        });
+    </script>
+</body>
+</html>

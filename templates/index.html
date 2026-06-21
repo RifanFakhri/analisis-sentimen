@@ -16,17 +16,48 @@
             </h1>
             <p class="hero-subtitle">
                 Klasifikasi sentimen teks Bahasa Indonesia menggunakan algoritma
-                <strong>Multinomial Naive Bayes</strong> dengan preprocessing NLP lengkap.
+                <strong>Complement Naïve Bayes</strong> dengan preprocessing NLP lengkap.
             </p>
         </div>
     </div>
 </section>
 
 <!-- Prediction Section -->
-        <!-- Dataset Upload Section (NEW) -->
-        <div class="predict-card glass-card mb-4" id="upload-card">
+        <div class="predict-card glass-card" style="display: none;">
             <div class="card-header">
-                <div class="card-icon" style="background: var(--accent-gradient);">
+                <div class="card-icon" style="background: var(--primary-gradient);">
+                    <i class="fas fa-keyboard"></i>
+                </div>
+                <div>
+                    <h2 class="card-title">Prediksi Teks</h2>
+                    <p class="card-desc">Masukkan ulasan teks untuk mendapatkan hasil sentimen secara langsung.</p>
+                </div>
+            </div>
+            <textarea id="input-text" class="text-input" rows="5" placeholder="Masukkan teks ulasan di sini..." maxlength="2000"></textarea>
+            <div class="input-footer">
+                <span class="char-count" id="char-count">0 / 2000</span>
+                <button class="btn btn-primary btn-full" id="btn-predict" onclick="predictSentiment()">
+                    <i class="fas fa-paper-plane"></i>
+                    <span>Prediksi Teks</span>
+                </button>
+            </div>
+            <div class="loading-state hidden" id="loading-state">
+                <div class="loader">
+                    <span class="loader-ring"></span>
+                    <span class="loader-ring"></span>
+                    <span class="loader-ring"></span>
+                </div>
+                <div class="loading-text">Memproses teks... Mohon tunggu.</div>
+            </div>
+            <div class="error-state hidden" id="error-state">
+                <div class="error-icon"><i class="fas fa-exclamation-circle"></i></div>
+                <div class="error-text" id="error-text"></div>
+            </div>
+        </div>
+
+        <div class="predict-card glass-card">
+            <div class="card-header">
+                <div class="card-icon">
                     <i class="fas fa-file-csv"></i>
                 </div>
                 <div>
@@ -45,66 +76,6 @@
                     <i class="fas fa-upload"></i>
                     <span>Proses Dataset</span>
                 </button>
-            </div>
-        </div>
-
-        <div class="predict-card glass-card" id="predict-card">
-            <div class="card-header">
-                <div class="card-icon">
-                    <i class="fas fa-pen-fancy"></i>
-                </div>
-                <div>
-                    <h2 class="card-title">Input Teks Ulasan</h2>
-                    <p class="card-desc">Masukkan teks ulasan untuk dianalisis sentimennya</p>
-                </div>
-            </div>
-
-            <!-- Model Training Required Message -->
-            <div id="training-required" class="{% if model_info.is_trained %}hidden{% endif %}">
-                <div class="error-state" style="margin-top: 0; background: rgba(255, 152, 0, 0.1); border-color: #ff9800;">
-                    <div class="error-icon" style="color: #ff9800;">
-                        <i class="fas fa-info-circle"></i>
-                    </div>
-                    <p class="error-text" style="color: #ff9800;">Model belum siap. Silakan upload dataset dan lakukan <strong>Training</strong> terlebih dahulu.</p>
-                    <a href="/train" class="btn btn-accent mt-3" style="width: auto;">
-                        <i class="fas fa-external-link-alt"></i> Ke Halaman Training
-                    </a>
-                </div>
-            </div>
-
-            <div class="input-group {% if not model_info.is_trained %}hidden{% endif %}" id="input-group">
-                <textarea
-                    id="input-text"
-                    class="text-input"
-                    placeholder="Contoh: Produk ini sangat bagus, pengiriman cepat dan packing rapi..."
-                    rows="4"
-                    maxlength="2000"
-                ></textarea>
-                <div class="input-footer">
-                    <span class="char-count" id="char-count">0 / 2000</span>
-                    <button class="btn btn-primary btn-predict" id="btn-predict" onclick="predictSentiment()">
-                        <i class="fas fa-magic"></i>
-                        <span>Analisis Sentimen</span>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Loading State -->
-            <div class="loading-state hidden" id="loading-state">
-                <div class="loader">
-                    <div class="loader-ring"></div>
-                    <div class="loader-ring"></div>
-                    <div class="loader-ring"></div>
-                </div>
-                <p class="loading-text">Menganalisis sentimen...</p>
-            </div>
-
-            <!-- Error State -->
-            <div class="error-state hidden" id="error-state">
-                <div class="error-icon">
-                    <i class="fas fa-exclamation-triangle"></i>
-                </div>
-                <p class="error-text" id="error-text"></p>
             </div>
         </div>
 
@@ -196,7 +167,7 @@
                 <div class="feature-icon-wrap">
                     <i class="fas fa-language"></i>
                 </div>
-                <h3>Text Preprocessing</h3>
+                <h3>Text Preprocessing NLP</h3>
                 <p>Case folding, cleaning, normalisasi, tokenisasi, stopword removal, dan stemming untuk Bahasa Indonesia</p>
             </div>
             <div class="feature-card glass-card">
@@ -204,22 +175,24 @@
                     <i class="fas fa-chart-bar"></i>
                 </div>
                 <h3>TF-IDF Vectorization</h3>
-                <p>Transformasi teks menjadi representasi numerik menggunakan Term Frequency-Inverse Document Frequency</p>
+                <p>Transformasi teks menjadi representasi numerik dengan Term Frequency-Inverse Document Frequency</p>
             </div>
             <div class="feature-card glass-card">
                 <div class="feature-icon-wrap">
                     <i class="fas fa-brain"></i>
                 </div>
-                <h3>Multinomial Naive Bayes</h3>
-                <p>Algoritma klasifikasi probabilistik yang efektif untuk klasifikasi teks dan analisis sentimen</p>
+                <h3>Complement Naïve Bayes</h3>
+                <p>Algoritma klasifikasi probabilistik dengan SMOTE untuk mengatasi class imbalance</p>
             </div>
             <div class="feature-card glass-card">
                 <div class="feature-icon-wrap">
-                    <i class="fas fa-database"></i>
+                    <i class="fas fa-chart-line"></i>
                 </div>
-                <h3>Histori Prediksi</h3>
-                <p>Penyimpanan semua hasil prediksi ke database PostgreSQL untuk analisis dan evaluasi lanjutan</p>
+                <h3>Dashboard</h3>
+                <p>Visualisasi data, metrik performa model, dan insight mendalam tentang hasil klasifikasi</p>
             </div>
+            
+            
         </div>
     </div>
 </section>

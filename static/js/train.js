@@ -1,4 +1,20 @@
 
+// ===== Update Training Stats =====
+async function updateTrainStats() {
+    try {
+        const res = await fetch('/api/train-stats');
+        const data = await res.json();
+        
+        // Update stat cards
+        document.getElementById('stat-total').textContent = data.total_data;
+        document.getElementById('stat-positif').textContent = data.label_stats.positif || 0;
+        document.getElementById('stat-netral').textContent = data.label_stats.netral || 0;
+        document.getElementById('stat-negatif').textContent = data.label_stats.negatif || 0;
+    } catch (e) {
+        console.error('Failed to update train stats:', e);
+    }
+}
+
 // ===== Train Model =====
 async function trainModel() {
     const btn = document.getElementById('btn-train');
@@ -21,6 +37,9 @@ async function trainModel() {
         const txt = document.getElementById('model-status-text');
         if (dot) { dot.className = 'status-dot status-active'; }
         if (txt) { txt.textContent = 'Model Ready'; }
+
+        // Update training stats with NB predictions
+        await updateTrainStats();
 
         showToast(`Training selesai! Akurasi: ${data.metrics.accuracy}%`);
     } catch (err) {

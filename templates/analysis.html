@@ -1,0 +1,260 @@
+{% extends "base.html" %}
+{% block title %}Analisis Sentimen{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero" id="hero-section">
+    <div class="hero-bg-shapes">
+        <div class="shape shape-1"></div>
+        <div class="shape shape-2"></div>
+        <div class="shape shape-3"></div>
+    </div>
+    <div class="container">
+        <div class="hero-content">
+            <h1 class="hero-title">
+                <span class="gradient-text">Analisis</span> Mendalam Sentimen
+            </h1>
+            <p class="hero-subtitle">
+                Hasil preprocessing, klasifikasi, evaluasi model, dan insight komprehensif untuk penelitian.
+            </p>
+        </div>
+    </div>
+</section>
+
+<!-- Analysis Content -->
+<section class="section" id="analysis-section">
+    <div class="container">
+        <!-- Tab Navigation -->
+        <div class="analysis-tabs" style="display: flex; gap: 1rem; border-bottom: 2px solid rgba(255,255,255,0.1); margin-bottom: 2rem; flex-wrap: wrap; overflow-x: auto;">
+            <button class="analysis-tab active" data-tab="preprocessing" style="padding: 0.75rem 1.5rem; background: none; border: none; color: white; cursor: pointer; border-bottom: 3px solid transparent; transition: all 0.3s; white-space: nowrap;">
+                <i class="fas fa-flask"></i> Preprocessing
+            </button>
+            <button class="analysis-tab" data-tab="classification" style="padding: 0.75rem 1.5rem; background: none; border: none; color: white; cursor: pointer; border-bottom: 3px solid transparent; transition: all 0.3s; white-space: nowrap;">
+                <i class="fas fa-sitemap"></i> Klasifikasi
+            </button>
+            <button class="analysis-tab" data-tab="evaluation" style="padding: 0.75rem 1.5rem; background: none; border: none; color: white; cursor: pointer; border-bottom: 3px solid transparent; transition: all 0.3s; white-space: nowrap;">
+                <i class="fas fa-chart-bar"></i> Evaluasi
+            </button>
+            <button class="analysis-tab" data-tab="features" style="padding: 0.75rem 1.5rem; background: none; border: none; color: white; cursor: pointer; border-bottom: 3px solid transparent; transition: all 0.3s; white-space: nowrap;">
+                <i class="fas fa-star"></i> Features
+            </button>
+            <button class="analysis-tab" data-tab="wordcloud" style="padding: 0.75rem 1.5rem; background: none; border: none; color: white; cursor: pointer; border-bottom: 3px solid transparent; transition: all 0.3s; white-space: nowrap;">
+                <i class="fas fa-cloud"></i> Word Cloud
+            </button>
+            <button class="analysis-tab" data-tab="distribution" style="padding: 0.75rem 1.5rem; background: none; border: none; color: white; cursor: pointer; border-bottom: 3px solid transparent; transition: all 0.3s; white-space: nowrap;">
+                <i class="fas fa-chart-pie"></i> Distribusi
+            </button>
+            <button class="analysis-tab" data-tab="statistics" style="padding: 0.75rem 1.5rem; background: none; border: none; color: white; cursor: pointer; border-bottom: 3px solid transparent; transition: all 0.3s; white-space: nowrap;">
+                <i class="fas fa-table"></i> Statistik
+            </button>
+            <button class="analysis-tab" data-tab="insights" style="padding: 0.75rem 1.5rem; background: none; border: none; color: white; cursor: pointer; border-bottom: 3px solid transparent; transition: all 0.3s; white-space: nowrap;">
+                <i class="fas fa-lightbulb"></i> Insights
+            </button>
+        </div>
+
+        <!-- Preprocessing Tab -->
+        <div id="preprocessing-content" class="tab-content" style="display: block;">
+            <div class="glass-card">
+                <div class="card-header">
+                    <div class="card-icon"><i class="fas fa-flask"></i></div>
+                    <div>
+                        <h2 class="card-title">Tahapan Preprocessing</h2>
+                        <p class="card-desc">Detail setiap langkah preprocessing teks</p>
+                    </div>
+                </div>
+                <div id="preprocessing-container" style="padding: 1.5rem;">
+                    <div style="text-align: center; opacity: 0.6;">Loading...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Classification Tab -->
+        <div id="classification-content" class="tab-content" style="display: none;">
+            <div class="glass-card">
+                <div class="card-header">
+                    <div class="card-icon"><i class="fas fa-sitemap"></i></div>
+                    <div>
+                        <h2 class="card-title">Hasil Klasifikasi</h2>
+                        <p class="card-desc">Contoh hasil klasifikasi sentimen per kategori</p>
+                    </div>
+                </div>
+                <div id="classification-container" style="padding: 1.5rem;">
+                    <div style="text-align: center; opacity: 0.6;">Loading...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Evaluation Tab -->
+        <div id="evaluation-content" class="tab-content" style="display: none;">
+            <div class="glass-card">
+                <div class="card-header">
+                    <div class="card-icon"><i class="fas fa-chart-bar"></i></div>
+                    <div>
+                        <h2 class="card-title">Evaluasi Model</h2>
+                        <p class="card-desc">Metrik performa dan confusion matrix</p>
+                    </div>
+                </div>
+                <div id="evaluation-container" style="padding: 1.5rem;">
+                    <div style="text-align: center; opacity: 0.6;">Loading...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Features Tab -->
+        <div id="features-content" class="tab-content" style="display: none;">
+            <div class="glass-card">
+                <div class="card-header">
+                    <div class="card-icon"><i class="fas fa-star"></i></div>
+                    <div>
+                        <h2 class="card-title">Feature Importance</h2>
+                        <p class="card-desc">Kata-kata paling penting per sentimen</p>
+                    </div>
+                </div>
+                <div id="features-container" style="padding: 1.5rem;">
+                    <div style="text-align: center; opacity: 0.6;">Loading...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Word Cloud Tab -->
+        <div id="wordcloud-content" class="tab-content" style="display: none;">
+            <div class="glass-card">
+                <div class="card-header">
+                    <div class="card-icon"><i class="fas fa-cloud"></i></div>
+                    <div>
+                        <h2 class="card-title">Word Cloud</h2>
+                        <p class="card-desc">Visualisasi kata-kata dominan per sentimen</p>
+                    </div>
+                </div>
+                <div id="wordcloud-container" style="padding: 1.5rem;">
+                    <div style="text-align: center; opacity: 0.6;">Loading...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Distribution Tab -->
+        <div id="distribution-content" class="tab-content" style="display: none;">
+            <div class="glass-card">
+                <div class="card-header">
+                    <div class="card-icon"><i class="fas fa-chart-pie"></i></div>
+                    <div>
+                        <h2 class="card-title">Distribusi Sentimen</h2>
+                        <p class="card-desc">Perbandingan distribusi rating vs prediksi NB</p>
+                    </div>
+                </div>
+                <div id="distribution-container" style="padding: 1.5rem;">
+                    <div style="text-align: center; opacity: 0.6;">Loading...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistics Tab -->
+        <div id="statistics-content" class="tab-content" style="display: none;">
+            <div class="glass-card">
+                <div class="card-header">
+                    <div class="card-icon"><i class="fas fa-table"></i></div>
+                    <div>
+                        <h2 class="card-title">Statistik Dataset</h2>
+                        <p class="card-desc">Informasi lengkap tentang dataset</p>
+                    </div>
+                </div>
+                <div id="statistics-container" style="padding: 1.5rem;">
+                    <div style="text-align: center; opacity: 0.6;">Loading...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Insights Tab -->
+        <div id="insights-content" class="tab-content" style="display: none;">
+            <div class="glass-card">
+                <div class="card-header">
+                    <div class="card-icon"><i class="fas fa-lightbulb"></i></div>
+                    <div>
+                        <h2 class="card-title">Insight & Rekomendasi</h2>
+                        <p class="card-desc">Temuan dan saran untuk penelitian</p>
+                    </div>
+                </div>
+                <div id="insights-container" style="padding: 1.5rem;">
+                    <div style="text-align: center; opacity: 0.6;">Loading...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+    .analysis-tab.active {
+        border-bottom-color: var(--primary-color);
+        color: var(--primary-color);
+    }
+    
+    .analysis-tab:hover {
+        opacity: 0.8;
+    }
+    
+    .tab-content {
+        animation: fadeIn 0.3s ease;
+    }
+    
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+        }
+        to {
+            opacity: 1;
+        }
+    }
+
+    .metric-box {
+        background: rgba(255, 255, 255, 0.05);
+        padding: 1.5rem;
+        border-radius: 8px;
+        margin-bottom: 1rem;
+        border-left: 4px solid var(--primary-color);
+    }
+
+    .metric-label {
+        opacity: 0.7;
+        margin-bottom: 0.5rem;
+        font-size: 14px;
+    }
+
+    .metric-value {
+        font-size: 24px;
+        font-weight: 700;
+        color: var(--primary-color);
+    }
+
+    .insight-box {
+        background: rgba(255, 255, 255, 0.05);
+        padding: 1.5rem;
+        border-radius: 8px;
+        margin-bottom: 1rem;
+        border-left: 4px solid #10b981;
+    }
+
+    .insight-title {
+        color: #10b981;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+
+    .word-freq-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.75rem;
+        border-bottom: 1px solid rgba(255,255,255,0.1);
+        align-items: center;
+    }
+
+    .word-freq-bar {
+        height: 8px;
+        background: linear-gradient(90deg, #667eea, #764ba2);
+        border-radius: 4px;
+        margin: 0 1rem;
+        flex: 1;
+    }
+</style>
+
+<script src="{{ url_for('static', filename='js/analysis.js') }}"></script>
+{% endblock %}

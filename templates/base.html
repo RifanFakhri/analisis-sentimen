@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description"
-        content="Sistem Analisis Sentimen berbasis Multinomial Naive Bayes untuk ulasan Bahasa Indonesia">
+        content="Sistem Analisis Sentimen berbasis Complement Naïve Bayes untuk ulasan Bahasa Indonesia">
     <title>{% block title %}Sentiment Analysis{% endblock %} | MNB Analyzer</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -43,23 +43,33 @@
             <div class="nav-links" id="nav-links">
                 <a href="/" class="nav-link {% if request.endpoint == 'main.index' %}active{% endif %}"
                     id="nav-predict">
-                    <i class="fas fa-magic"></i>
-                    <span>Prediksi</span>
+                    <i class="fas fa-home"></i>
+                    <span>Home</span>
                 </a>
-                <a href="/history" class="nav-link {% if request.endpoint == 'main.history' %}active{% endif %}"
-                    id="nav-history">
-                    <i class="fas fa-history"></i>
-                    <span>Histori</span>
+                <a href="/train" class="nav-link {% if request.endpoint == 'main.train_page' %}active{% endif %}"
+                    id="nav-train">
+                    <i class="fas fa-cogs"></i>
+                    <span>Training</span>
                 </a>
                 <a href="/dashboard" class="nav-link {% if request.endpoint == 'main.dashboard' %}active{% endif %}"
                     id="nav-dashboard">
                     <i class="fas fa-chart-line"></i>
                     <span>Dashboard</span>
                 </a>
-                <a href="/train" class="nav-link {% if request.endpoint == 'main.train_page' %}active{% endif %}"
-                    id="nav-train">
-                    <i class="fas fa-cogs"></i>
-                    <span>Training</span>
+                <a href="/report" class="nav-link {% if request.endpoint == 'main.report' %}active{% endif %}"
+                    id="nav-report">
+                    <i class="fas fa-file-alt"></i>
+                    <span>Laporan</span>
+                </a>
+                <a href="/history" class="nav-link {% if request.endpoint == 'main.history' %}active{% endif %}"
+                    id="nav-history" style="display: none;">
+                    <i class="fas fa-history"></i>
+                    <span>Histori</span>
+                </a>
+                <a href="/analysis" class="nav-link {% if request.endpoint == 'main.analysis' %}active{% endif %}"
+                    id="nav-analysis" style="display: none;">
+                    <i class="fas fa-microscope"></i>
+                    <span>Analisis</span>
                 </a>
             </div>
             <div class="nav-status">
@@ -86,9 +96,9 @@
             <div class="footer-content">
                 <p class="footer-text">
                     <i class="fas fa-brain footer-icon"></i>
-                    Sentiment Analysis &mdash; Multinomial Naive Bayes
+                    Sentiment Analysis &mdash;  Naive Bayes
                 </p>
-                <p class="footer-sub">Built with Flask & scikit-learn</p>
+                <p class="footer-sub">Annisa Maulana Sabilla - 220130 </p>
             </div>
         </div>
     </footer>
