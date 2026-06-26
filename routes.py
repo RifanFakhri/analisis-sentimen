@@ -2,8 +2,8 @@
 Flask routes for Sentiment Analysis application.
 """
 
-from flask import Blueprint, render_template, request, jsonify, send_file
-from models import db, PredictionHistory, TrainingData, TrainingLog
+from flask import Blueprint, render_template, request, jsonify, send_file, session, redirect, url_for, flash
+from models import db, PredictionHistory, TrainingData, TrainingLog, User, Comment
 from ml_model import sentiment_model
 from preprocessing import preprocess_for_display, preprocess_text
 from sqlalchemy import func
@@ -12,6 +12,7 @@ from datetime import datetime, timedelta
 import re
 import pandas as pd
 import io
+from functools import wraps
 
 POSITIVE_TERMS = {
     'bagus', 'baik', 'nyaman', 'puas', 'menarik', 'indah', 'mantap', 'baguss', 'keren',
@@ -55,9 +56,127 @@ import os
 main_bp = Blueprint('main', __name__)
 
 
+@main_bp.context_processor
+def inject_model_info():
+    try:
+        total_data = TrainingData.query.count()
+        model_info = sentiment_model.get_model_info()
+        if total_data == 0:
+            model_info['is_trained'] = False
+        return dict(model_info=model_info)
+    except Exception:
+        return dict(model_info={'is_trained': False})
+
+
+def login_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if 'user_id' not in session:
+            flash('Silakan login terlebih dahulu.', 'warning')
+            return redirect(url_for('main.login'))
+        return f(*args, **kwargs)
+    return decorated_function
+
+
+def admin_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if 'user_id' not in session:
+            flash('Silakan login terlebih dahulu.', 'warning')
+            return redirect(url_for('main.login'))
+        if session.get('role') != 'admin':
+            flash('Akses ditolak. Halaman ini hanya untuk Admin.', 'danger')
+            return redirect(url_for('main.index'))
+        return f(*args, **kwargs)
+    return decorated_function
+
+
 def has_text(text):
     """Return True if the text contains non-empty content."""
     return bool(text and str(text).strip())
+
+
+@main_bp.route('/login', methods=['GET', 'POST'])
+def login():
+    if 'user_id' in session:
+        return redirect(url_for('main.dashboard'))
+    if request.method == 'POST':
+        username = request.form.get('username', '').strip()
+        password = request.form.get('password', '').strip()
+        
+        user = User.query.filter_by(username=username).first()
+        if user and user.check_password(password):
+            session['user_id'] = user.id
+            session['username'] = user.username
+            session['role'] = user.role
+            flash(f'Selamat datang kembali, {user.username}!', 'success')
+            return redirect(url_for('main.dashboard'))
+        else:
+            flash('Username atau password salah.', 'danger')
+    
+    model_info = sentiment_model.get_model_info()
+    return render_template('login.html', model_info=model_info)
+
+
+@main_bp.route('/logout')
+def logout():
+    session.clear()
+    flash('Anda telah keluar.', 'info')
+    return redirect(url_for('main.index'))
+
+
+@main_bp.route('/admin/users')
+@admin_required
+def admin_users():
+    users = User.query.order_by(User.id).all()
+    model_info = sentiment_model.get_model_info()
+    return render_template('admin_users.html', users=users, model_info=model_info)
+
+
+@main_bp.route('/api/admin/users', methods=['POST'])
+@admin_required
+def create_user():
+    try:
+        data = request.get_json() or {}
+        username = data.get('username', '').strip()
+        password = data.get('password', '').strip()
+        role = 'admin'
+        
+        if not username or not password:
+            return jsonify({'error': 'Username dan password tidak boleh kosong.'}), 400
+            
+        if User.query.filter_by(username=username).first():
+            return jsonify({'error': 'Username sudah digunakan.'}), 400
+            
+        new_user = User(username=username, role=role)
+        new_user.set_password(password)
+        db.session.add(new_user)
+        db.session.commit()
+        
+        return jsonify({'success': True, 'message': f'User {username} berhasil dibuat sebagai Administrator.', 'user': new_user.to_dict()})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@main_bp.route('/api/admin/users/<int:user_id>/toggle-role', methods=['POST'])
+@admin_required
+def toggle_user_role(user_id):
+    return jsonify({'error': 'Fitur ini dinonaktifkan. Sistem hanya mendukung akun Administrator.'}), 400
+
+
+@main_bp.route('/api/admin/users/<int:user_id>', methods=['DELETE'])
+@admin_required
+def delete_user(user_id):
+    try:
+        user = User.query.get_or_404(user_id)
+        if user.id == session.get('user_id'):
+            return jsonify({'error': 'Anda tidak bisa menghapus akun Anda sendiri.'}), 400
+            
+        db.session.delete(user)
+        db.session.commit()
+        return jsonify({'success': True, 'message': f'User {user.username} berhasil dihapus.'})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 
 @main_bp.route('/api/stats')
@@ -74,20 +193,23 @@ def get_stats():
     if total_reviews == 0:
         return jsonify({'summary': {'total_reviews': 0}, 'metrics': {'is_trained': False}, 'error': 'No data'})
 
-    # FILTER BY NB PREDICTION (bukan rating label)
+    # Check if we have NB predictions in database
+    has_nb_preds = any(d.nb_predicted_label for d in all_data)
+
+    # FILTER BY NB PREDICTION (bukan rating label) if trained, otherwise fallback to ground truth label
     if sentiment_filter != 'all':
-        filtered_data = [d for d in all_data if d.nb_predicted_label == sentiment_filter]
+        if has_nb_preds:
+            filtered_data = [d for d in all_data if d.nb_predicted_label == sentiment_filter]
+        else:
+            filtered_data = [d for d in all_data if d.label == sentiment_filter]
     else:
         filtered_data = all_data
     
-    # Count by NB prediction (bukan by label)
-    nb_predictions = [d.nb_predicted_label for d in filtered_data if d.nb_predicted_label]
-    sentiment_counts = Counter(nb_predictions) if nb_predictions else Counter()
-    
-    if len(filtered_data) == 0:
-        filtered_data = all_data
+    if has_nb_preds:
         nb_predictions = [d.nb_predicted_label for d in filtered_data if d.nb_predicted_label]
-        sentiment_counts = Counter(nb_predictions) if nb_predictions else Counter()
+    else:
+        nb_predictions = [d.label for d in filtered_data if d.label]
+    sentiment_counts = Counter(nb_predictions) if nb_predictions else Counter()
     
     # 2. Aspect Analysis (Aspek yang sering dibahas)
     aspect_keywords = {
@@ -135,10 +257,15 @@ def get_stats():
         m = current.month
         y = current.year
         
-        # Count NB predictions per month
-        pos = len([d for d in trend_data_query if d.bulan == m and d.tahun == y and d.nb_predicted_label == 'positif'])
-        neg = len([d for d in trend_data_query if d.bulan == m and d.tahun == y and d.nb_predicted_label == 'negatif'])
-        net = len([d for d in trend_data_query if d.bulan == m and d.tahun == y and d.nb_predicted_label == 'netral'])
+        # Count predictions per month (using NB if trained, otherwise ground-truth label)
+        if has_nb_preds:
+            pos = len([d for d in trend_data_query if d.bulan == m and d.tahun == y and d.nb_predicted_label == 'positif'])
+            neg = len([d for d in trend_data_query if d.bulan == m and d.tahun == y and d.nb_predicted_label == 'negatif'])
+            net = len([d for d in trend_data_query if d.bulan == m and d.tahun == y and d.nb_predicted_label == 'netral'])
+        else:
+            pos = len([d for d in trend_data_query if d.bulan == m and d.tahun == y and d.label == 'positif'])
+            neg = len([d for d in trend_data_query if d.bulan == m and d.tahun == y and d.label == 'negatif'])
+            net = len([d for d in trend_data_query if d.bulan == m and d.tahun == y and d.label == 'netral'])
         
         monthly_stats.append({
             'label': f"{month_map[m]} {y}",
@@ -160,12 +287,14 @@ def get_stats():
         return text.split()
 
     neg_words = []
-    for d in [d for d in filtered_data if d.nb_predicted_label == 'negatif' and has_text(d.text)]:
+    target_neg_data = [d for d in filtered_data if d.nb_predicted_label == 'negatif' and has_text(d.text)] if has_nb_preds else [d for d in filtered_data if d.label == 'negatif' and has_text(d.text)]
+    for d in target_neg_data:
         neg_words.extend([w for w in fast_clean(d.text) if len(w) > 3])
     top_neg = Counter(neg_words).most_common(10)
     
     pos_words = []
-    for d in [d for d in filtered_data if d.nb_predicted_label == 'positif' and has_text(d.text)]:
+    target_pos_data = [d for d in filtered_data if d.nb_predicted_label == 'positif' and has_text(d.text)] if has_nb_preds else [d for d in filtered_data if d.label == 'positif' and has_text(d.text)]
+    for d in target_pos_data:
         pos_words.extend([w for w in fast_clean(d.text) if len(w) > 3])
     top_pos = Counter(pos_words).most_common(10)
 
@@ -194,7 +323,7 @@ def get_stats():
     # UNTUK SKRIPSI: Comparison Rating vs NB Prediction
     all_data_for_comparison = all_data if not filtered_data else all_data
     rating_based_counts = Counter([d.label for d in all_data_for_comparison if d.label])
-    nb_based_counts = Counter([d.nb_predicted_label for d in all_data_for_comparison if d.nb_predicted_label])
+    nb_based_counts = Counter([d.nb_predicted_label for d in all_data_for_comparison if d.nb_predicted_label]) if has_nb_preds else rating_based_counts
 
     total_for_stats = len(all_data_for_comparison)
     
@@ -222,7 +351,7 @@ def get_stats():
         },
         'top_neg': [{'word': w, 'count': c} for w, c in top_neg],
         'top_pos': [{'word': w, 'count': c} for w, c in top_pos],
-        'samples': [{'text': d.text, 'sentiment': d.nb_predicted_label or 'netral', 'confidence': d.nb_confidence or 0} for d in filtered_data[:5]],
+        'samples': [{'text': d.text, 'sentiment': d.nb_predicted_label or d.label or 'netral', 'confidence': d.nb_confidence or 1.0} for d in filtered_data[:5]],
         # UNTUK SKRIPSI: Tambah comparison rating vs NB
         'rating_based': {
             'positif': rating_based_counts.get('positif', 0),
@@ -249,6 +378,25 @@ def index():
         model_info['is_trained'] = False
         
     return render_template('index.html', model_info=model_info)
+
+
+@main_bp.route('/visualisasi')
+def visualisasi():
+    """Visualization page - Sentiment charts and statistics."""
+    total_data = TrainingData.query.count()
+    model_info = sentiment_model.get_model_info()
+    
+    if total_data == 0:
+        model_info['is_trained'] = False
+        
+    return render_template('visualisasi.html', model_info=model_info)
+
+
+@main_bp.route('/comment')
+def comment_page():
+    """Comments & discussion page for regular users."""
+    model_info = sentiment_model.get_model_info()
+    return render_template('comment.html', model_info=model_info)
 
 
 @main_bp.route('/predict', methods=['POST'])
@@ -310,6 +458,7 @@ def predict():
 
 
 @main_bp.route('/history')
+@login_required
 def history():
     """Prediction history page."""
     model_info = sentiment_model.get_model_info()
@@ -317,6 +466,7 @@ def history():
 
 
 @main_bp.route('/dashboard')
+@login_required
 def dashboard():
     """Dashboard visualization page."""
     model_info = sentiment_model.get_model_info()
@@ -324,6 +474,7 @@ def dashboard():
 
 
 @main_bp.route('/api/history')
+@login_required
 def api_history():
     """API endpoint to get prediction history."""
     page = request.args.get('page', 1, type=int)
@@ -353,6 +504,7 @@ def api_history():
 
 
 @main_bp.route('/api/history/<int:history_id>', methods=['DELETE'])
+@login_required
 def delete_history(history_id):
     """Delete a prediction history entry."""
     try:
@@ -365,6 +517,7 @@ def delete_history(history_id):
 
 
 @main_bp.route('/api/history/clear', methods=['DELETE'])
+@login_required
 def clear_history():
     """Clear all prediction history."""
     try:
@@ -376,6 +529,7 @@ def clear_history():
 
 
 @main_bp.route('/train')
+@admin_required
 def train_page():
     """Training page."""
     model_info = sentiment_model.get_model_info()
@@ -403,6 +557,7 @@ def train_page():
 
 
 @main_bp.route('/api/train-stats')
+@admin_required
 def get_train_stats():
     """Get training stats for the training page (after training completion)."""
     model_info = sentiment_model.get_model_info()
@@ -430,6 +585,7 @@ def get_train_stats():
 
 
 @main_bp.route('/report')
+@login_required
 def report():
     """Report/Laporan page."""
     model_info = sentiment_model.get_model_info()
@@ -437,6 +593,7 @@ def report():
 
 
 @main_bp.route('/analysis')
+@login_required
 def analysis():
     """Analisis Sentimen page - comprehensive analysis."""
     model_info = sentiment_model.get_model_info()
@@ -444,6 +601,7 @@ def analysis():
 
 
 @main_bp.route('/api/train', methods=['POST'])
+@admin_required
 def train_model():
     """Train the model using data from database and predict all data (for thesis)."""
     try:
@@ -501,6 +659,7 @@ def train_model():
 
 
 @main_bp.route('/api/upload-dataset', methods=['POST'])
+@admin_required
 def upload_dataset():
     """Upload CSV dataset and replace current training data."""
     try:
@@ -658,6 +817,7 @@ def upload_dataset():
 
 
 @main_bp.route('/api/training-logs')
+@admin_required
 def get_training_logs():
     """Get history of uploads and training sessions."""
     logs = TrainingLog.query.order_by(TrainingLog.created_at.desc()).limit(20).all()
@@ -665,6 +825,7 @@ def get_training_logs():
 
 
 @main_bp.route('/api/training-data', methods=['POST'])
+@admin_required
 def add_training_data():
     """Add new training data."""
     try:
@@ -693,6 +854,7 @@ def add_training_data():
 
 
 @main_bp.route('/api/training-data/bulk', methods=['POST'])
+@admin_required
 def add_bulk_training_data():
     """Add multiple training data entries at once."""
     try:
@@ -723,6 +885,7 @@ def add_bulk_training_data():
         return jsonify({'error': str(e)}), 500
 
 @main_bp.route('/api/reset', methods=['POST'])
+@admin_required
 def reset_system():
     """Reset the entire system: DB and Model."""
     try:
@@ -741,6 +904,7 @@ def reset_system():
         return jsonify({'error': str(e)}), 500
 
 @main_bp.route('/api/model-info')
+@login_required
 def model_info():
     """Get current model information."""
     info = sentiment_model.get_model_info()
@@ -748,6 +912,7 @@ def model_info():
 
 
 @main_bp.route('/api/model-evaluation', methods=['GET'])
+@login_required
 def model_evaluation():
     """
     API endpoint untuk menampilkan evaluasi model Naive Bayes (untuk skripsi).
@@ -810,6 +975,7 @@ def model_evaluation():
 
 
 @main_bp.route('/api/thesis-report', methods=['GET'])
+@login_required
 def thesis_report():
     """
     Generate comprehensive thesis report untuk penelitian skripsi.
@@ -929,6 +1095,7 @@ def thesis_report():
 
 
 @main_bp.route('/api/export-report')
+@login_required
 def export_report():
     """Export report in different formats (PDF, Excel, CSV)."""
     try:
@@ -1101,4 +1268,61 @@ def export_report():
             return jsonify({'error': 'Format tidak didukung. Gunakan: csv, excel, atau pdf.'}), 400
     
     except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@main_bp.route('/api/comments', methods=['GET'])
+def get_comments():
+    try:
+        comments = Comment.query.filter_by(parent_id=None).order_by(Comment.created_at.desc()).all()
+        return jsonify([c.to_dict() for c in comments]), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@main_bp.route('/api/comments', methods=['POST'])
+def create_comment():
+    try:
+        data = request.get_json() or {}
+        author_name = data.get('author_name', '').strip()
+        content = data.get('content', '').strip()
+        parent_id = data.get('parent_id')
+
+        if not author_name:
+            return jsonify({'error': 'Nama tidak boleh kosong.'}), 400
+        if not content:
+            return jsonify({'error': 'Isi komentar tidak boleh kosong.'}), 400
+
+        if parent_id:
+            parent = Comment.query.get(parent_id)
+            if not parent:
+                return jsonify({'error': 'Komentar induk tidak ditemukan.'}), 404
+
+        new_comment = Comment(
+            author_name=author_name,
+            content=content,
+            parent_id=parent_id
+        )
+        db.session.add(new_comment)
+        db.session.commit()
+
+        return jsonify({'success': True, 'comment': new_comment.to_dict()}), 201
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
+@main_bp.route('/api/comments/<int:comment_id>', methods=['DELETE'])
+@admin_required
+def delete_comment(comment_id):
+    try:
+        comment = Comment.query.get(comment_id)
+        if not comment:
+            return jsonify({'error': 'Komentar tidak ditemukan.'}), 404
+        
+        db.session.delete(comment)
+        db.session.commit()
+        return jsonify({'success': True, 'message': 'Komentar berhasil dihapus.'}), 200
+    except Exception as e:
+        db.session.rollback()
         return jsonify({'error': str(e)}), 500

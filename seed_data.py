@@ -91,6 +91,14 @@ def seed_from_csv():
         db.create_all()
         print("Database schema updated.")
 
+        # Seed default admin user
+        from models import User
+        admin_user = User(username='admin', role='admin')
+        admin_user.set_password('admin123')
+        db.session.add(admin_user)
+        db.session.commit()
+        print("Default admin user seeded (username: admin, password: admin123).")
+
         added = 0
         for _, row in df.iterrows():
             text = row['Teks Ulasan'].strip()

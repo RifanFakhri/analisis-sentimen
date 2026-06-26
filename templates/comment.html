@@ -1,0 +1,672 @@
+{% extends "base.html" %}
+{% block title %}Komentar & Diskusi Wisatawan{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Premium Forum/Comment Section Styling */
+    .comment-card-wrapper {
+        animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    
+    .comment-item-card {
+        padding: 1rem 1.25rem !important;
+        border-radius: 14px !important;
+        background: rgba(30, 41, 59, 0.35) !important;
+        border: 1px solid rgba(255, 255, 255, 0.06) !important;
+        backdrop-filter: blur(20px) !important;
+        -webkit-backdrop-filter: blur(20px) !important;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2) !important;
+        margin-bottom: 1.25rem !important;
+        transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s ease, box-shadow 0.3s ease !important;
+        text-align: left !important;
+    }
+    
+    .comment-item-card:hover {
+        transform: translateY(-1px) !important;
+        border-color: rgba(139, 92, 246, 0.3) !important;
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3) !important;
+    }
+    
+    .comment-header-row {
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        margin-bottom: 0.75rem !important;
+        width: 100% !important;
+    }
+    
+    .comment-author-info {
+        display: flex !important;
+        align-items: center !important;
+        gap: 0.65rem !important;
+    }
+    
+    .comment-avatar {
+        width: 36px !important;
+        height: 36px !important;
+        border-radius: 50% !important;
+        color: white !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        font-weight: 700 !important;
+        font-size: 0.95rem !important;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.15) !important;
+    }
+    
+    .comment-avatar-mini {
+        width: 26px !important;
+        height: 26px !important;
+        border-radius: 50% !important;
+        color: white !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        font-weight: 700 !important;
+        font-size: 0.75rem !important;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.15) !important;
+    }
+    
+    .comment-author-name {
+        font-size: 0.9rem !important;
+        font-weight: 700 !important;
+        color: white !important;
+        display: block !important;
+    }
+    
+    .comment-date {
+        font-size: 0.7rem !important;
+        color: var(--text-muted) !important;
+        display: block !important;
+        margin-top: 1px !important;
+    }
+    
+    .comment-body-text {
+        font-size: 0.9rem !important;
+        color: rgba(255, 255, 255, 0.9) !important;
+        line-height: 1.5 !important;
+        margin-bottom: 0.5rem !important;
+        text-align: left !important;
+        white-space: pre-line !important;
+        padding-left: 42px !important; /* Align with author text, not under avatar */
+    }
+    
+    .comment-replies-list {
+        margin-top: 1rem !important;
+        padding-left: 2.6rem !important; /* Indent correctly starting past avatar */
+        border-left: 2px dashed rgba(255, 255, 255, 0.08) !important;
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 0.75rem !important;
+    }
+    
+    .comment-reply-item {
+        background: rgba(255, 255, 255, 0.015) !important;
+        border-radius: 10px !important;
+        padding: 0.75rem 1rem !important;
+        border: 1px solid rgba(255, 255, 255, 0.03) !important;
+        text-align: left !important;
+        transition: background-color 0.2s ease !important;
+    }
+    
+    .comment-reply-item:hover {
+        background: rgba(255, 255, 255, 0.035) !important;
+    }
+    
+    .comment-reply-item .comment-body-text {
+        padding-left: 32px !important;
+        margin-bottom: 0 !important;
+    }
+    
+    .btn-comment-action {
+        background: none !important;
+        border: none !important;
+        font-size: 0.75rem !important;
+        font-weight: 700 !important;
+        cursor: pointer !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 4px !important;
+        padding: 4px 8px !important;
+        border-radius: 6px !important;
+        transition: all 0.2s ease !important;
+    }
+    
+    .btn-comment-reply {
+        color: var(--accent-light) !important;
+        background: rgba(139, 92, 246, 0.08) !important;
+    }
+    .btn-comment-reply:hover {
+        background: rgba(139, 92, 246, 0.18) !important;
+        transform: translateY(-1px) !important;
+    }
+    
+    .btn-comment-delete {
+        color: #f87171 !important;
+        background: rgba(239, 68, 68, 0.08) !important;
+    }
+    .btn-comment-delete:hover {
+        background: rgba(239, 68, 68, 0.18) !important;
+        transform: translateY(-1px) !important;
+    }
+    
+    /* Comment Form (Unified Editor Card) */
+    .comment-form-card {
+        padding: 2rem !important;
+        border-radius: 18px !important;
+        background: rgba(30, 41, 59, 0.5) !important;
+        border: 1px solid rgba(255, 255, 255, 0.08) !important;
+        margin-bottom: 3rem !important;
+        text-align: left !important;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3) !important;
+        transition: border-color 0.3s ease !important;
+    }
+    
+    .comment-form-card:focus-within {
+        border-color: rgba(139, 92, 246, 0.4) !important;
+    }
+    
+    .comment-input-field {
+        background: rgba(15, 23, 42, 0.7) !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        border-radius: 10px !important;
+        padding: 12px 16px !important;
+        color: white !important;
+        font-size: 0.9rem !important;
+        outline: none !important;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease !important;
+        width: 100% !important;
+    }
+    .comment-input-field:focus {
+        border-color: var(--accent-color) !important;
+        box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.15) !important;
+    }
+    
+    .comment-textarea-field {
+        background: rgba(15, 23, 42, 0.7) !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        border-radius: 10px !important;
+        padding: 14px 16px !important;
+        color: white !important;
+        font-size: 0.92rem !important;
+        outline: none !important;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease !important;
+        width: 100% !important;
+    }
+    .comment-textarea-field:focus {
+        border-color: var(--accent-color) !important;
+        box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.15) !important;
+    }
+    
+    .btn-comment-submit {
+        background: var(--primary-gradient) !important;
+        color: white !important;
+        border: none !important;
+        border-radius: 10px !important;
+        padding: 10px 22px !important;
+        font-size: 0.9rem !important;
+        font-weight: 700 !important;
+        cursor: pointer !important;
+        transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 8px !important;
+    }
+    
+    .btn-comment-submit:hover {
+        transform: translateY(-1px) !important;
+        box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3) !important;
+    }
+    
+    .btn-comment-cancel {
+        background: rgba(255, 255, 255, 0.05) !important;
+        color: var(--text-secondary) !important;
+        border: 1px solid rgba(255, 255, 255, 0.08) !important;
+        border-radius: 10px !important;
+        padding: 10px 22px !important;
+        font-size: 0.9rem !important;
+        font-weight: 600 !important;
+        cursor: pointer !important;
+        transition: all 0.2s ease !important;
+    }
+    .btn-comment-cancel:hover {
+        background: rgba(255, 255, 255, 0.1) !important;
+    }
+
+    .reply-form-container {
+        margin-top: 1.25rem !important;
+        padding: 1.5rem !important;
+        background: rgba(15, 23, 42, 0.4) !important;
+        border-radius: 14px !important;
+        border: 1px solid rgba(255, 255, 255, 0.08) !important;
+        animation: fadeIn 0.3s ease;
+    }
+
+    /* Badge count style */
+    .badge-modern {
+        font-size: 0.8rem !important;
+        font-weight: 700 !important;
+        padding: 6px 14px !important;
+        border-radius: 20px !important;
+        display: inline-block !important;
+    }
+    .badge-success-soft {
+        background: rgba(16, 185, 129, 0.15) !important;
+        color: #34d399 !important;
+        border: 1px solid rgba(16, 185, 129, 0.25) !important;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="hero" id="hero-section" style="padding: 4.5rem 0 2.5rem 0;">
+    <div class="hero-bg-shapes">
+        <div class="shape shape-1"></div>
+        <div class="shape shape-2"></div>
+        <div class="shape shape-3"></div>
+    </div>
+    <div class="container" style="max-width: 800px;">
+        <div class="hero-content" style="text-align: left; margin: 0;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-end; width: 100%; flex-wrap: wrap; gap: 1rem;">
+                <div>
+                    <h1 class="hero-title" style="font-size: 2.5rem; margin-bottom: 0.5rem; line-height: 1.2; text-align: left;">
+                        Diskusi <span class="gradient-text">Ulasan</span> Wisatawan
+                    </h1>
+                    <p class="hero-subtitle" style="font-size: 1rem; color: var(--text-secondary); text-align: left; margin: 0;">
+                        Berbagi saran, cerita, atau pertanyaan mengenai pengalaman Anda berlibur di Pulau Merak.
+                    </p>
+                </div>
+                <div>
+                    <span class="badge-modern badge-success-soft" id="comments-count-badge">0 Diskusi</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="section" style="padding-top: 0.5rem;">
+    <div class="container" style="max-width: 800px;">
+        <div class="comment-card-wrapper">
+            <!-- New Comment Form Card -->
+            <div class="comment-form-card">
+                <h3 style="font-size: 1.05rem; font-weight: 700; color: white; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                    <i class="fas fa-edit" style="color: var(--accent-light);"></i> Tulis Komentar Baru
+                </h3>
+                <div style="display: flex; flex-direction: column; gap: 1.25rem;">
+                    <div style="display: grid; grid-template-columns: 1fr; gap: 1.25rem;">
+                        <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                            <label for="new-comment-author" style="font-size: 0.75rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em;">Nama Anda</label>
+                            <div style="position: relative;">
+                                <i class="fas fa-user" style="position: absolute; left: 16px; top: 15px; color: var(--text-muted); font-size: 0.9rem;"></i>
+                                <input type="text" id="new-comment-author" placeholder="Masukkan nama panggilan Anda" class="comment-input-field" maxlength="50" style="padding-left: 44px !important;">
+                            </div>
+                        </div>
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                        <label for="new-comment-content" style="font-size: 0.75rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em;">Isi Komentar</label>
+                        <textarea id="new-comment-content" placeholder="Ceritakan pengalaman atau feedback Anda secara detail..." class="comment-textarea-field" rows="4" maxlength="1000" style="resize: vertical;"></textarea>
+                    </div>
+                    <div style="display: flex; justify-content: flex-end;">
+                        <button class="btn-comment-submit" onclick="submitNewComment()">
+                            <i class="fas fa-paper-plane"></i> Kirim Komentar
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- List of Comments -->
+            <div id="comments-list-container">
+                <div style="text-align: center; padding: 4rem; color: var(--text-muted); background: rgba(30,41,59,0.2); border-radius: 16px;">
+                    <i class="fas fa-circle-notch fa-spin" style="font-size: 2rem; color: var(--accent-color); margin-bottom: 1rem; display: block;"></i>
+                    Memuat diskusi ulasan...
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Global admin flag
+    const isAdmin = "{{ session.get('role') }}" === 'admin';
+
+    document.addEventListener('DOMContentLoaded', () => {
+        loadComments();
+    });
+
+    // Generate gradient background for avatars dynamically based on name hash
+    function getAvatarColor(name) {
+        const gradients = [
+            'linear-gradient(135deg, #6366f1, #a855f7)', // Indigo-Purple
+            'linear-gradient(135deg, #3b82f6, #1d4ed8)', // Blue
+            'linear-gradient(135deg, #10b981, #047857)', // Green
+            'linear-gradient(135deg, #f59e0b, #b45309)', // Amber
+            'linear-gradient(135deg, #ec4899, #be185d)', // Pink
+            'linear-gradient(135deg, #14b8a6, #0f766e)'  // Teal
+        ];
+        if (!name) return gradients[0];
+        let hash = 0;
+        for (let i = 0; i < name.length; i++) {
+            hash = name.charCodeAt(i) + ((hash << 5) - hash);
+        }
+        const index = Math.abs(hash) % gradients.length;
+        return gradients[index];
+    }
+
+    // Toast notifications using Swal or native alerts
+    function showToast(message, type = 'success') {
+        if (typeof Swal !== 'undefined') {
+            Swal.fire({
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 3000,
+                timerProgressBar: true,
+                icon: type,
+                title: message,
+                background: '#1e293b',
+                color: '#fff'
+            });
+        } else {
+            alert(message);
+        }
+    }
+
+    // Load comments list
+    async function loadComments() {
+        try {
+            const response = await fetch('/api/comments');
+            const comments = await response.json();
+            
+            // Calculate total count
+            let totalCount = comments.length;
+            comments.forEach(c => {
+                if (c.replies) totalCount += c.replies.length;
+            });
+            document.getElementById('comments-count-badge').textContent = `${totalCount} Diskusi`;
+            
+            renderComments(comments);
+        } catch (err) {
+            console.error('Failed to load comments:', err);
+            document.getElementById('comments-list-container').innerHTML = `
+                <div style="text-align: center; padding: 3rem; color: #f87171;">
+                    <i class="fas fa-exclamation-circle" style="font-size: 2.5rem; margin-bottom: 1rem; display: block;"></i>
+                    Gagal memuat ulasan. Silakan muat ulang halaman.
+                </div>
+            `;
+        }
+    }
+
+    // Render comments list
+    function renderComments(comments) {
+        const container = document.getElementById('comments-list-container');
+        if (!container) return;
+        container.innerHTML = '';
+
+        if (!comments || comments.length === 0) {
+            container.innerHTML = `
+                <div style="text-align: center; padding: 4rem; color: var(--text-muted); background: rgba(30,41,59,0.2); border-radius: 16px; border: 1px dashed rgba(255,255,255,0.06);">
+                    <i class="fas fa-comments" style="font-size: 3rem; color: rgba(255,255,255,0.05); margin-bottom: 1.25rem; display: block;"></i>
+                    Belum ada ulasan yang dibagikan. Tulis ulasan pertama Anda di atas!
+                </div>
+            `;
+            return;
+        }
+
+        comments.forEach(comment => {
+            const node = createCommentNode(comment);
+            container.appendChild(node);
+        });
+    }
+
+    // Build comment node with custom colors and avatar logic
+    function createCommentNode(comment) {
+        const card = document.createElement('div');
+        card.className = 'comment-item-card';
+        card.id = `comment-${comment.id}`;
+
+        const initials = comment.author_name ? comment.author_name.charAt(0).toUpperCase() : '?';
+        const avatarStyle = `background: ${getAvatarColor(comment.author_name)} !important;`;
+
+        // Build nested replies list
+        let repliesHtml = '';
+        if (comment.replies && comment.replies.length > 0) {
+            repliesHtml = `<div class="comment-replies-list">`;
+            comment.replies.forEach(reply => {
+                const miniInitials = reply.author_name ? reply.author_name.charAt(0).toUpperCase() : '?';
+                const miniAvatarStyle = `background: ${getAvatarColor(reply.author_name)} !important;`;
+                const replyDeleteBtn = isAdmin 
+                    ? `<button class="btn-comment-action btn-comment-delete" onclick="deleteComment(${reply.id})">
+                        <i class="fas fa-trash-alt"></i> Hapus
+                       </button>`
+                    : '';
+                
+                repliesHtml += `
+                    <div class="comment-reply-item" id="comment-${reply.id}">
+                        <div class="comment-header-row">
+                            <div class="comment-author-info">
+                                <div class="comment-avatar-mini" style="${miniAvatarStyle}">${miniInitials}</div>
+                                <div>
+                                    <span class="comment-author-name">${escapeHTML(reply.author_name)}</span>
+                                    <span class="comment-date">${reply.created_at}</span>
+                                </div>
+                            </div>
+                            ${replyDeleteBtn}
+                        </div>
+                        <div class="comment-body-text">${escapeHTML(reply.content)}</div>
+                    </div>
+                `;
+            });
+            repliesHtml += `</div>`;
+        }
+
+        const parentDeleteBtn = isAdmin 
+            ? `<button class="btn-comment-action btn-comment-delete" onclick="deleteComment(${comment.id})">
+                <i class="fas fa-trash-alt"></i> Hapus
+               </button>`
+            : '';
+
+        card.innerHTML = `
+            <div class="comment-header-row">
+                <div class="comment-author-info">
+                    <div class="comment-avatar" style="${avatarStyle}">${initials}</div>
+                    <div>
+                        <span class="comment-author-name">${escapeHTML(comment.author_name)}</span>
+                        <span class="comment-date">${comment.created_at}</span>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 8px;">
+                    <button class="btn-comment-action btn-comment-reply" onclick="showReplyForm(${comment.id})">
+                        <i class="fas fa-reply"></i> Balas
+                    </button>
+                    ${parentDeleteBtn}
+                </div>
+            </div>
+            <div class="comment-body-text">${escapeHTML(comment.content)}</div>
+
+            <!-- Reply Form wrapper -->
+            <div class="reply-form-container hidden" id="reply-form-wrap-${comment.id}">
+                <div style="display: flex; flex-direction: column; gap: 1rem;">
+                    <div style="display: flex; flex-direction: column; gap: 0.4rem;">
+                        <label style="font-size: 0.7rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase;">Nama Anda</label>
+                        <div style="position: relative;">
+                            <i class="fas fa-user" style="position: absolute; left: 14px; top: 12px; color: var(--text-muted); font-size: 0.8rem;"></i>
+                            <input type="text" id="reply-author-${comment.id}" placeholder="Masukkan nama panggilan" class="comment-input-field" maxlength="50" style="padding-left: 38px !important; max-width: 280px;">
+                        </div>
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 0.4rem;">
+                        <label style="font-size: 0.7rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase;">Isi Balasan</label>
+                        <textarea id="reply-content-${comment.id}" placeholder="Tulis balasan atau jawaban Anda..." class="comment-textarea-field" rows="2" maxlength="500" style="resize: none;"></textarea>
+                    </div>
+                    <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 4px;">
+                        <button class="btn-comment-cancel" onclick="hideReplyForm(${comment.id})">Batal</button>
+                        <button class="btn-comment-submit" onclick="submitReply(${comment.id})">
+                            <i class="fas fa-paper-plane" style="font-size: 0.8rem;"></i> Kirim Balasan
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            ${repliesHtml}
+        `;
+
+        return card;
+    }
+
+    // Toggle reply forms
+    function showReplyForm(commentId) {
+        const wrap = document.getElementById(`reply-form-wrap-${commentId}`);
+        if (wrap) {
+            // Hide other open reply forms first if desired, or just show this one
+            wrap.classList.remove('hidden');
+            document.getElementById(`reply-author-${commentId}`).focus();
+        }
+    }
+
+    function hideReplyForm(commentId) {
+        const wrap = document.getElementById(`reply-form-wrap-${commentId}`);
+        if (wrap) {
+            wrap.classList.add('hidden');
+            document.getElementById(`reply-author-${commentId}`).value = '';
+            document.getElementById(`reply-content-${commentId}`).value = '';
+        }
+    }
+
+    // Create a new parent comment
+    async function submitNewComment() {
+        const authorField = document.getElementById('new-comment-author');
+        const contentField = document.getElementById('new-comment-content');
+
+        const authorName = authorField.value.trim();
+        const content = contentField.value.trim();
+
+        if (!authorName) {
+            showToast('Nama tidak boleh kosong.', 'error');
+            authorField.focus();
+            return;
+        }
+        if (!content) {
+            showToast('Isi komentar tidak boleh kosong.', 'error');
+            contentField.focus();
+            return;
+        }
+
+        try {
+            const response = await fetch('/api/comments', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ author_name: authorName, content: content })
+            });
+
+            const resData = await response.json();
+            if (response.ok) {
+                showToast('Komentar berhasil dikirim!');
+                authorField.value = '';
+                contentField.value = '';
+                loadComments();
+            } else {
+                showToast(resData.error || 'Gagal mengirim komentar.', 'error');
+            }
+        } catch (err) {
+            showToast('Terjadi kesalahan koneksi.', 'error');
+        }
+    }
+
+    // Create a new reply comment
+    async function submitReply(commentId) {
+        const authorField = document.getElementById(`reply-author-${commentId}`);
+        const contentField = document.getElementById(`reply-content-${commentId}`);
+
+        const authorName = authorField.value.trim();
+        const content = contentField.value.trim();
+
+        if (!authorName) {
+            showToast('Nama tidak boleh kosong.', 'error');
+            authorField.focus();
+            return;
+        }
+        if (!content) {
+            showToast('Balasan tidak boleh kosong.', 'error');
+            contentField.focus();
+            return;
+        }
+
+        try {
+            const response = await fetch('/api/comments', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    author_name: authorName,
+                    content: content,
+                    parent_id: commentId
+                })
+            });
+
+            const resData = await response.json();
+            if (response.ok) {
+                showToast('Balasan berhasil dikirim!');
+                hideReplyForm(commentId);
+                loadComments();
+            } else {
+                showToast(resData.error || 'Gagal mengirim balasan.', 'error');
+            }
+        } catch (err) {
+            showToast('Terjadi kesalahan koneksi.', 'error');
+        }
+    }
+
+    // Delete comment
+    async function deleteComment(commentId) {
+        let confirmAction = false;
+        if (typeof Swal !== 'undefined') {
+            const res = await Swal.fire({
+                title: 'Hapus komentar?',
+                text: "Komentar ini (dan semua balasan di dalamnya jika ada) akan dihapus secara permanen!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#475569',
+                confirmButtonText: 'Ya, Hapus!',
+                cancelButtonText: 'Batal',
+                background: '#1e293b',
+                color: '#fff'
+            });
+            confirmAction = res.isConfirmed;
+        } else {
+            confirmAction = confirm("Apakah Anda yakin ingin menghapus komentar ini?");
+        }
+
+        if (!confirmAction) return;
+
+        try {
+            const response = await fetch(`/api/comments/${commentId}`, {
+                method: 'DELETE'
+            });
+            const resData = await response.json();
+            if (response.ok) {
+                showToast('Komentar berhasil dihapus.');
+                loadComments();
+            } else {
+                showToast(resData.error || 'Gagal menghapus komentar.', 'error');
+            }
+        } catch (err) {
+            showToast('Terjadi kesalahan koneksi.', 'error');
+        }
+    }
+
+    // HTML escape utility
+    function escapeHTML(str) {
+        if (!str) return '';
+        return str.replace(/[&<>'"]/g, 
+            tag => ({
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                "'": '&#39;',
+                '"': '&quot;'
+            }[tag] || tag)
+        );
+    }
+</script>
+{% endblock %}

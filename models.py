@@ -86,3 +86,71 @@ class TrainingLog(db.Model):
             'details': self.details,
             'created_at': self.created_at.strftime('%d %b %Y, %H:%M:%S')
         }
+
+
+class User(db.Model):
+    """Model to store user and admin accounts."""
+    __tablename__ = 'users'
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    username = db.Column(db.String(50), unique=True, nullable=False)
+    password_hash = db.Column(db.String(255), nullable=False)
+    role = db.Column(db.String(20), default='user', nullable=False) # 'user' or 'admin'
+    created_at = db.Column(
+        db.DateTime,
+        default=lambda: datetime.now(timezone.utc),
+        nullable=False
+    )
+
+    def set_password(self, password):
+        """Hash and set the password."""
+        from werkzeug.security import generate_password_hash
+        self.password_hash = generate_password_hash(password)
+
+    def check_password(self, password):
+        """Check hashed password."""
+        from werkzeug.security import check_password_hash
+        return check_password_hash(self.password_hash, password)
+
+    def to_dict(self):
+        """Convert model instance to dictionary."""
+        return {
+            'id': self.id,
+            'username': self.username,
+            'role': self.role,
+            'created_at': self.created_at.strftime('%d %b %Y, %H:%M:%S')
+        }
+
+
+class Comment(db.Model):
+    """Model to store tourist and public comments with replies."""
+    __tablename__ = 'comments'
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    author_name = db.Column(db.String(100), nullable=False)
+    content = db.Column(db.Text, nullable=False)
+    parent_id = db.Column(db.Integer, db.ForeignKey('comments.id', ondelete='CASCADE'), nullable=True)
+    created_at = db.Column(
+        db.DateTime,
+        default=lambda: datetime.now(timezone.utc),
+        nullable=False
+    )
+
+    replies = db.relationship(
+        'Comment',
+        backref=db.backref('parent', remote_side=[id]),
+        cascade='all, delete-orphan',
+        lazy='joined',
+        order_by='Comment.created_at.asc()'
+    )
+
+    def to_dict(self):
+        """Convert comment to dict, including nested replies."""
+        return {
+            'id': self.id,
+            'author_name': self.author_name,
+            'content': self.content,
+            'parent_id': self.parent_id,
+            'created_at': self.created_at.strftime('%d %b %Y, %H:%M'),
+            'replies': [reply.to_dict() for reply in self.replies]
+        }

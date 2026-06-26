@@ -59,6 +59,47 @@
         </div>
 
         <div class="train-grid">
+            <!-- Upload Dataset Card -->
+            <div class="train-card" id="upload-dataset-wrapper">
+                {% if total_data > 0 %}
+                <!-- Button to trigger upload -->
+                <button class="btn btn-primary btn-full" id="btn-trigger-upload" onclick="showUploadArea()" style="margin-bottom: 1.5rem; padding: 14px; font-size: 14px; font-weight: 700; border-radius: 12px; display: flex; justify-content: center; align-items: center; gap: 8px;">
+                    <i class="fas fa-file-upload"></i>
+                    <span>Upload Dataset Baru</span>
+                </button>
+                {% endif %}
+
+                <!-- The Upload Card itself, hidden initially if total_data > 0 -->
+                <div class="glass-card {% if total_data > 0 %}hidden{% endif %}" id="upload-card-content" style="padding: 1.5rem;">
+                    <div class="card-header">
+                        <div class="card-icon" style="background: var(--gradient-1);">
+                            <i class="fas fa-file-csv"></i>
+                        </div>
+                        <div>
+                            <h2 class="card-title">Upload Dataset Baru</h2>
+                            <p class="card-desc">Ganti dataset training dengan file CSV baru</p>
+                        </div>
+                    </div>
+                    <div class="upload-area" id="upload-area" onclick="document.getElementById('csv-file').click()" style="border: 2px dashed rgba(255,255,255,0.1); border-radius: 12px; padding: 2rem; text-align: center; cursor: pointer; transition: border-color 0.3s; margin-top: 1.5rem;">
+                        <input type="file" id="csv-file" accept=".csv" class="hidden" onchange="handleFileSelect(this)" style="display: none;">
+                        <i class="fas fa-cloud-upload-alt upload-icon" style="font-size: 2.5rem; color: var(--accent-light); margin-bottom: 1rem; display: block;"></i>
+                        <p id="file-name" style="margin: 0; color: var(--text-secondary);">Klik atau drag file CSV ke sini</p>
+                        <p class="upload-hint" style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.5rem;">Format: Teks Ulasan, Rating, Tanggal</p>
+                    </div>
+                    <div class="card-footer mt-3" style="margin-top: 1.5rem; display: flex; gap: 10px;">
+                        <button class="btn btn-accent btn-full hidden" id="btn-upload" onclick="uploadCSV()">
+                            <i class="fas fa-upload"></i>
+                            <span>Proses Dataset</span>
+                        </button>
+                        {% if total_data > 0 %}
+                        <button class="btn btn-danger" id="btn-cancel-upload" onclick="hideUploadArea()" style="border-radius: 12px; padding: 10px 16px;">
+                            Batal
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
             <!-- Train Model -->
             <div class="train-card glass-card" id="train-model-card">
                 <div class="card-header">
@@ -200,4 +241,27 @@
 
 {% block extra_js %}
 <script src="{{ url_for('static', filename='js/train.js') }}"></script>
+<script>
+    function showUploadArea() {
+        const btnTrigger = document.getElementById('btn-trigger-upload');
+        const uploadCard = document.getElementById('upload-card-content');
+        if (btnTrigger) btnTrigger.classList.add('hidden');
+        if (uploadCard) uploadCard.classList.remove('hidden');
+    }
+
+    function hideUploadArea() {
+        const btnTrigger = document.getElementById('btn-trigger-upload');
+        const uploadCard = document.getElementById('upload-card-content');
+        if (btnTrigger) btnTrigger.classList.remove('hidden');
+        if (uploadCard) uploadCard.classList.add('hidden');
+        
+        // Reset file selection
+        const fileInput = document.getElementById('csv-file');
+        const fileName = document.getElementById('file-name');
+        const btnUpload = document.getElementById('btn-upload');
+        if (fileInput) fileInput.value = '';
+        if (fileName) fileName.textContent = 'Klik atau drag file CSV ke sini';
+        if (btnUpload) btnUpload.classList.add('hidden');
+    }
+</script>
 {% endblock %}

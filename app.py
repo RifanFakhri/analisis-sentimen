@@ -64,6 +64,24 @@ def create_app():
         db.create_all()
         ensure_training_data_columns()
 
+        # Seed default users if they don't exist
+        from models import User
+        try:
+            if not User.query.filter_by(username='admin').first():
+                admin = User(username='admin', role='admin')
+                admin.set_password('admin123')
+                db.session.add(admin)
+                print("Seeded default admin (admin / admin123)")
+            if not User.query.filter_by(username='user').first():
+                user = User(username='user', role='user')
+                user.set_password('user123')
+                db.session.add(user)
+                print("Seeded default user (user / user123)")
+            db.session.commit()
+        except Exception as e:
+            db.session.rollback()
+            print(f"Error seeding default users: {e}")
+
         # Try to load existing model
         sentiment_model.load_model()
 

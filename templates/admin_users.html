@@ -1,0 +1,290 @@
+{% extends 'base.html' %}
+
+{% block title %}Manajemen User{% endblock %}
+
+{% block content %}
+<div class="container section">
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">
+                <i class="fas fa-users-cog"></i>
+                <span>Manajemen User</span>
+            </h1>
+            <p class="page-desc">Kelola akun pengguna, hak akses, dan tambahkan administrator baru.</p>
+        </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 24px; align-items: start;">
+        <!-- Form Tambah User -->
+        <div class="glass-card">
+            <div class="card-header">
+                <div class="card-icon">
+                    <i class="fas fa-user-plus"></i>
+                </div>
+                <div>
+                    <h3 class="card-title">Tambah User</h3>
+                    <p class="card-desc">Buat akun baru secara langsung</p>
+                </div>
+            </div>
+            
+            <form id="add-user-form">
+                <div style="margin-bottom: 16px;">
+                    <label for="new-username" style="display: block; margin-bottom: 8px; font-size: 13px; font-weight: 500; color: var(--text-secondary);">Username</label>
+                    <input type="text" id="new-username" class="text-input" placeholder="Username..." required minlength="3">
+                </div>
+                <div style="margin-bottom: 16px;">
+                    <label for="new-password" style="display: block; margin-bottom: 8px; font-size: 13px; font-weight: 500; color: var(--text-secondary);">Password</label>
+                    <input type="password" id="new-password" class="text-input" placeholder="Password..." required minlength="6">
+                </div>
+                <div style="margin-bottom: 20px;">
+                    <label style="display: block; margin-bottom: 8px; font-size: 13px; font-weight: 500; color: var(--text-secondary);">Role / Hak Akses</label>
+                    <input type="text" value="Administrator" class="text-input" style="background: rgba(255,255,255,0.03); color: var(--text-muted); cursor: not-allowed; font-weight: 600;" readonly>
+                    <input type="hidden" id="new-role" value="admin">
+                </div>
+                <button type="submit" class="btn btn-accent btn-full">
+                    <i class="fas fa-save"></i> Simpan User
+                </button>
+            </form>
+        </div>
+
+        <!-- Daftar User -->
+        <div class="glass-card table-card">
+            <div class="card-header">
+                <div class="card-icon">
+                    <i class="fas fa-list"></i>
+                </div>
+                <div>
+                    <h3 class="card-title">Daftar Pengguna Sistem</h3>
+                    <p class="card-desc">Total terdaftar: <span id="user-count">{{ users|length }}</span> user</p>
+                </div>
+            </div>
+
+            <div class="table-wrapper">
+                <table class="data-table" id="users-table">
+                    <thead>
+                        <tr>
+                            <th>Username</th>
+                            <th>Role</th>
+                            <th>Tanggal Dibuat</th>
+                            <th style="text-align: center;">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for u in users %}
+                        <tr id="user-row-{{ u.id }}">
+                            <td style="font-weight: 600; color: #fff;">{{ u.username }}</td>
+                            <td>
+                                <span class="badge {% if u.role == 'admin' %}badge-positif{% else %}badge-netral{% endif %}" id="role-badge-{{ u.id }}">
+                                    {{ u.role|upper }}
+                                </span>
+                            </td>
+                            <td>{{ u.created_at.strftime('%d %b %Y, %H:%M:%S') }}</td>
+                            <td style="display: flex; gap: 8px; justify-content: center; align-items: center;">
+                                {% if u.id == session.get('user_id') %}
+                                <span class="badge" style="background: rgba(255,255,255,0.05); color: var(--text-muted);">
+                                    <i class="fas fa-user-lock"></i> Sesi Anda
+                                </span>
+                                {% else %}
+                                <button class="btn btn-delete btn-delete-user" data-id="{{ u.id }}" data-username="{{ u.username }}" style="padding: 6px 12px; font-size: 12px;" title="Hapus User">
+                                    <i class="fas fa-trash-alt"></i> Hapus
+                                </button>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Handle Tambah User
+document.getElementById('add-user-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const username = document.getElementById('new-username').value.trim();
+    const password = document.getElementById('new-password').value;
+    const role = document.getElementById('new-role').value;
+    
+    Swal.fire({
+        title: 'Mohon tunggu...',
+        text: 'Sedang menyimpan data user baru...',
+        allowOutsideClick: false,
+        didOpen: () => {
+            Swal.showLoading();
+        }
+    });
+    
+    fetch('/api/admin/users', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ username, password, role })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.error) {
+            Swal.fire({
+                title: 'Gagal',
+                text: data.error,
+                icon: 'error',
+                confirmButtonColor: '#6366f1'
+            });
+        } else {
+            Swal.fire({
+                title: 'Berhasil',
+                text: data.message,
+                icon: 'success',
+                confirmButtonColor: '#6366f1'
+            }).then(() => {
+                location.reload();
+            });
+        }
+    })
+    .catch(err => {
+        Swal.fire({
+            title: 'Error',
+            text: 'Terjadi kesalahan pada server.',
+            icon: 'error',
+            confirmButtonColor: '#6366f1'
+        });
+    });
+});
+
+// Ubah Role User
+function toggleRole(userId, username) {
+    Swal.fire({
+        title: 'Konfirmasi',
+        text: `Apakah Anda yakin ingin mengubah hak akses/role dari user "${username}"?`,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#6366f1',
+        cancelButtonColor: '#ef4444',
+        confirmButtonText: 'Ya, Ubah!',
+        cancelButtonText: 'Batal'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            Swal.fire({
+                title: 'Mohon tunggu...',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+            
+            fetch(`/api/admin/users/${userId}/toggle-role`, {
+                method: 'POST'
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.error) {
+                    Swal.fire({
+                        title: 'Gagal',
+                        text: data.error,
+                        icon: 'error',
+                        confirmButtonColor: '#6366f1'
+                    });
+                } else {
+                    Swal.fire({
+                        title: 'Berhasil',
+                        text: data.message,
+                        icon: 'success',
+                        confirmButtonColor: '#6366f1'
+                    }).then(() => {
+                        location.reload();
+                    });
+                }
+            })
+            .catch(err => {
+                Swal.fire({
+                    title: 'Error',
+                    text: 'Terjadi kesalahan saat memproses data.',
+                    icon: 'error',
+                    confirmButtonColor: '#6366f1'
+                });
+            });
+        }
+    });
+}
+
+// Hapus User
+function deleteUser(userId, username) {
+    Swal.fire({
+        title: 'Hapus User?',
+        text: `Apakah Anda yakin ingin menghapus user "${username}"? Tindakan ini tidak bisa dibatalkan!`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#ef4444',
+        cancelButtonColor: '#6366f1',
+        confirmButtonText: 'Ya, Hapus!',
+        cancelButtonText: 'Batal'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            Swal.fire({
+                title: 'Menghapus...',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+            
+            fetch(`/api/admin/users/${userId}`, {
+                method: 'DELETE'
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.error) {
+                    Swal.fire({
+                        title: 'Gagal',
+                        text: data.error,
+                        icon: 'error',
+                        confirmButtonColor: '#6366f1'
+                    });
+                } else {
+                    Swal.fire({
+                        title: 'Berhasil',
+                        text: data.message,
+                        icon: 'success',
+                        confirmButtonColor: '#6366f1'
+                    }).then(() => {
+                        location.reload();
+                    });
+                }
+            })
+            .catch(err => {
+                Swal.fire({
+                    title: 'Error',
+                    text: 'Terjadi kesalahan saat menghapus data.',
+                    icon: 'error',
+                    confirmButtonColor: '#6366f1'
+                });
+            });
+        }
+    });
+}
+
+// Attach event listeners using data attributes to avoid inline javascript errors
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.btn-toggle-role').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const id = this.getAttribute('data-id');
+            const username = this.getAttribute('data-username');
+            toggleRole(id, username);
+        });
+    });
+
+    document.querySelectorAll('.btn-delete-user').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const id = this.getAttribute('data-id');
+            const username = this.getAttribute('data-username');
+            deleteUser(id, username);
+        });
+    });
+});
+</script>
+{% endblock %}

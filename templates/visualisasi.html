@@ -1,0 +1,403 @@
+{% extends "base.html" %}
+{% block title %}Visualisasi Sentimen Wisatawan{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Premium Dashboard Modern Styling */
+    .stat-card-modern {
+        padding: 1.5rem !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: space-between !important;
+        border-radius: 16px !important;
+        background: rgba(30, 41, 59, 0.45) !important;
+        border: 1px solid rgba(255, 255, 255, 0.08) !important;
+        backdrop-filter: blur(20px) !important;
+        -webkit-backdrop-filter: blur(20px) !important;
+        min-height: 140px !important;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25) !important;
+        transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s ease, box-shadow 0.3s ease !important;
+    }
+    
+    .stat-card-modern:hover {
+        transform: translateY(-4px) !important;
+        border-color: rgba(139, 92, 246, 0.4) !important;
+        box-shadow: 0 16px 36px rgba(0, 0, 0, 0.35) !important;
+    }
+    
+    .stat-card-header {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        width: 100% !important;
+        margin-bottom: 0.75rem !important;
+    }
+    
+    .stat-card-title {
+        font-size: 0.8rem !important;
+        font-weight: 700 !important;
+        color: var(--text-secondary) !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.05em !important;
+    }
+    
+    .stat-card-icon-wrap {
+        width: 38px !important;
+        height: 38px !important;
+        border-radius: 10px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        font-size: 1.1rem !important;
+    }
+    
+    .bg-primary-soft {
+        background: rgba(139, 92, 246, 0.15) !important;
+        color: var(--accent-light) !important;
+    }
+    
+    .bg-success-soft {
+        background: rgba(16, 185, 129, 0.15) !important;
+        color: var(--positif) !important;
+    }
+    
+    .bg-warning-soft {
+        background: rgba(245, 158, 11, 0.15) !important;
+        color: var(--netral) !important;
+    }
+    
+    .bg-danger-soft {
+        background: rgba(239, 68, 68, 0.15) !important;
+        color: var(--negatif) !important;
+    }
+    
+    .stat-card-body {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 0.25rem !important;
+    }
+    
+    .stat-card-number {
+        font-size: 2.25rem !important;
+        font-weight: 800 !important;
+        color: white !important;
+        line-height: 1.1 !important;
+        margin: 0 0 4px 0 !important;
+    }
+    
+    .stat-card-number.text-success { color: #10b981 !important; }
+    .stat-card-number.text-warning { color: #f59e0b !important; }
+    .stat-card-number.text-danger { color: #ef4444 !important; }
+    
+    .stat-card-sub {
+        font-size: 0.8rem !important;
+        color: var(--text-secondary) !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 0.5rem !important;
+    }
+    
+    .stat-card-sub.text-muted {
+        color: var(--text-muted) !important;
+    }
+    
+    .badge-modern {
+        padding: 2px 8px !important;
+        font-size: 0.75rem !important;
+        border-radius: 6px !important;
+        font-weight: 700 !important;
+        display: inline-block !important;
+    }
+    
+    .badge-success-soft {
+        background: rgba(16, 185, 129, 0.2) !important;
+        color: #34d399 !important;
+    }
+    
+    .badge-warning-soft {
+        background: rgba(245, 158, 11, 0.2) !important;
+        color: #fbbf24 !important;
+    }
+    
+    .badge-danger-soft {
+        background: rgba(239, 68, 68, 0.2) !important;
+        color: #f87171 !important;
+    }
+    
+    /* Charts Grid Layout */
+    .charts-grid-modern {
+        display: grid !important;
+        grid-template-columns: 1.8fr 1.2fr !important;
+        gap: 2rem !important;
+        margin-bottom: 3rem !important;
+        align-items: start !important;
+    }
+    
+    @media (max-width: 992px) {
+        .charts-grid-modern {
+            grid-template-columns: 1fr !important;
+        }
+    }
+    
+    .chart-card-modern {
+        padding: 1.75rem !important;
+        background: rgba(30, 41, 59, 0.4) !important;
+        border: 1px solid rgba(255, 255, 255, 0.08) !important;
+        border-radius: 16px !important;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25) !important;
+        display: flex !important;
+        flex-direction: column !important;
+        backdrop-filter: blur(20px) !important;
+        -webkit-backdrop-filter: blur(20px) !important;
+        transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s ease, box-shadow 0.3s ease !important;
+    }
+    
+    .chart-card-modern:hover {
+        transform: translateY(-4px) !important;
+        border-color: rgba(139, 92, 246, 0.4) !important;
+        box-shadow: 0 16px 36px rgba(0, 0, 0, 0.35) !important;
+    }
+    
+    .chart-title-modern {
+        font-size: 1rem !important;
+        font-weight: 700 !important;
+        color: white !important;
+        margin-bottom: 1.5rem !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 0.5rem !important;
+    }
+    
+    .chart-container-modern {
+        position: relative !important;
+        width: 100% !important;
+        height: 320px !important;
+        margin-top: auto !important;
+    }
+    
+    .chart-container-doughnut {
+        position: relative !important;
+        width: 100% !important;
+        height: 240px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+
+    /* Word Cloud / Tag Styling */
+    .tag-cloud {
+        display: flex !important;
+        flex-wrap: wrap !important;
+        gap: 8px !important;
+        margin-top: 10px !important;
+    }
+    
+    .tag {
+        display: inline-flex !important;
+        align-items: center !important;
+        padding: 6px 12px !important;
+        border-radius: 20px !important;
+        font-size: 0.8rem !important;
+        font-weight: 600 !important;
+        transition: all 0.2s ease !important;
+    }
+    
+    .tag-pos {
+        background: rgba(16, 185, 129, 0.12) !important;
+        color: #34d399 !important;
+        border: 1px solid rgba(16, 185, 129, 0.25) !important;
+    }
+    
+    .tag-pos:hover {
+        background: rgba(16, 185, 129, 0.22) !important;
+        transform: translateY(-1px) !important;
+    }
+    
+    .tag-neg {
+        background: rgba(239, 68, 68, 0.12) !important;
+        color: #f87171 !important;
+        border: 1px solid rgba(239, 68, 68, 0.25) !important;
+    }
+    
+    .tag-neg:hover {
+        background: rgba(239, 68, 68, 0.22) !important;
+        transform: translateY(-1px) !important;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="hero" id="hero-section" style="padding: 4rem 0 2rem 0;">
+    <div class="hero-bg-shapes">
+        <div class="shape shape-1"></div>
+        <div class="shape shape-2"></div>
+        <div class="shape shape-3"></div>
+    </div>
+    <div class="container">
+        <div class="hero-content" style="text-align: center; max-width: 800px; margin: 0 auto;">
+            <h1 class="hero-title" style="font-size: 2.75rem; margin-bottom: 0.75rem; line-height: 1.2;">
+                Visualisasi <span class="gradient-text">Sentimen</span> Wisatawan
+            </h1>
+            <p class="hero-subtitle" style="font-size: 1.05rem; color: var(--text-secondary); max-width: 650px; margin: 0 auto;">
+                Statistik kepuasan pengunjung Pulau Merak berdasarkan hasil analisis sentimen ulasan Google Maps.
+            </p>
+        </div>
+    </div>
+</section>
+
+<!-- Visualisasi Sentimen Pulau Merak -->
+<section class="section" id="visualization-section" style="padding-top: 1rem;">
+    <div class="container">
+        <!-- Hidden inputs to satisfy dashboard.js filter elements requirements -->
+        <div style="display: none;">
+            <select id="dataset-sentiment-filter">
+                <option value="all" selected>All</option>
+            </select>
+            <select id="trend-range-filter">
+                <option value="all" selected>All</option>
+            </select>
+        </div>
+
+        <!-- Stats Row -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem; margin-bottom: 2.5rem;">
+            <!-- Total Card -->
+            <div class="stat-card-modern">
+                <div class="stat-card-header">
+                    <span class="stat-card-title">Total Ulasan</span>
+                    <div class="stat-card-icon-wrap bg-primary-soft">
+                        <i class="fas fa-comments"></i>
+                    </div>
+                </div>
+                <div class="stat-card-body">
+                    <h2 class="stat-card-number" id="sum-total">0</h2>
+                    <span class="stat-card-sub text-muted">Ulasan Terkumpul</span>
+                </div>
+            </div>
+            <!-- Positif Card -->
+            <div class="stat-card-modern">
+                <div class="stat-card-header">
+                    <span class="stat-card-title">Sentimen Positif</span>
+                    <div class="stat-card-icon-wrap bg-success-soft">
+                        <i class="fas fa-smile"></i>
+                    </div>
+                </div>
+                <div class="stat-card-body">
+                    <h2 class="stat-card-number text-success" id="sum-pos-count">0</h2>
+                    <span class="stat-card-sub">
+                        <span class="badge-modern badge-success-soft" id="sum-pos-percent">0%</span> dari total
+                    </span>
+                </div>
+            </div>
+            <!-- Netral Card -->
+            <div class="stat-card-modern">
+                <div class="stat-card-header">
+                    <span class="stat-card-title">Sentimen Netral</span>
+                    <div class="stat-card-icon-wrap bg-warning-soft">
+                        <i class="fas fa-meh"></i>
+                    </div>
+                </div>
+                <div class="stat-card-body">
+                    <h2 class="stat-card-number text-warning" id="sum-netral-count">0</h2>
+                    <span class="stat-card-sub">
+                        <span class="badge-modern badge-warning-soft" id="sum-netral-percent">0%</span> dari total
+                    </span>
+                </div>
+            </div>
+            <!-- Negatif Card -->
+            <div class="stat-card-modern">
+                <div class="stat-card-header">
+                    <span class="stat-card-title">Sentimen Negatif</span>
+                    <div class="stat-card-icon-wrap bg-danger-soft">
+                        <i class="fas fa-frown"></i>
+                    </div>
+                </div>
+                <div class="stat-card-body">
+                    <h2 class="stat-card-number text-danger" id="sum-neg-count">0</h2>
+                    <span class="stat-card-sub">
+                        <span class="badge-modern badge-danger-soft" id="sum-neg-percent">0%</span> dari total
+                    </span>
+                </div>
+            </div>
+            
+            <!-- Hidden accuracy fields to satisfy dashboard.js targets -->
+            <div style="display: none;">
+                <span id="sum-accuracy">0%</span>
+                <span id="metric-precision">0%</span>
+                <span id="metric-recall">0%</span>
+                <span id="metric-f1">0%</span>
+                <div id="neg-samples-list"></div>
+            </div>
+        </div>
+
+        <!-- Charts & Analysis Grid -->
+        <div class="charts-grid-modern">
+            <!-- Left Column: Trend and Word Cloud -->
+            <div style="display: flex; flex-direction: column; gap: 2rem;">
+                <!-- Trend Chart Card -->
+                <div class="chart-card-modern">
+                    <h3 class="chart-title-modern">
+                        <i class="fas fa-chart-line" style="color: var(--accent-light);"></i> Tren Kepuasan Bulanan
+                    </h3>
+                    <div class="chart-container-modern">
+                        <canvas id="trendChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Word Cloud Card -->
+                <div class="chart-card-modern">
+                    <h3 class="chart-title-modern">
+                        <i class="fas fa-cloud" style="color: var(--accent-light);"></i> Kata Kunci Populer
+                    </h3>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                        <div>
+                            <h4 style="font-size: 0.85rem; font-weight: 600; color: #34d399; margin-bottom: 12px; display: flex; align-items: center; gap: 0.4rem;">
+                                <i class="fas fa-smile"></i> Ulasan Positif
+                            </h4>
+                            <div class="tag-cloud" id="pos-keywords-list">
+                                <!-- JS -->
+                            </div>
+                        </div>
+                        <div>
+                            <h4 style="font-size: 0.85rem; font-weight: 600; color: #f87171; margin-bottom: 12px; display: flex; align-items: center; gap: 0.4rem;">
+                                <i class="fas fa-frown"></i> Ulasan Negatif
+                            </h4>
+                            <div class="tag-cloud" id="neg-keywords-list">
+                                <!-- JS -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Distribution and Aspect Analysis -->
+            <div style="display: flex; flex-direction: column; gap: 2rem;">
+                <!-- Doughnut Chart Card -->
+                <div class="chart-card-modern">
+                    <h3 class="chart-title-modern">
+                        <i class="fas fa-chart-pie" style="color: var(--accent-light);"></i> Distribusi Sentimen
+                    </h3>
+                    <div class="chart-container-doughnut">
+                        <canvas id="distributionChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Aspect Stats Card -->
+                <div class="chart-card-modern">
+                    <h3 class="chart-title-modern">
+                        <i class="fas fa-list-check" style="color: var(--accent-light);"></i> Aspek yang Sering Dibahas
+                    </h3>
+                    <div id="aspects-list" style="display: flex; flex-direction: column; gap: 1.25rem;">
+                        <!-- JS -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+{% endblock %}

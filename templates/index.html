@@ -23,14 +23,16 @@
 </section>
 
 <!-- Prediction Section -->
-        <div class="predict-card glass-card" style="display: none;">
+<section class="section" id="prediction-section" style="padding: 2rem 0;">
+    <div class="container" style="max-width: 800px; margin: 0 auto;">
+        <div class="predict-card glass-card" id="predict-card-text">
             <div class="card-header">
                 <div class="card-icon" style="background: var(--primary-gradient);">
                     <i class="fas fa-keyboard"></i>
                 </div>
                 <div>
-                    <h2 class="card-title">Prediksi Teks</h2>
-                    <p class="card-desc">Masukkan ulasan teks untuk mendapatkan hasil sentimen secara langsung.</p>
+                    <h2 class="card-title">Prediksi Teks Ulasan</h2>
+                    <p class="card-desc">Masukkan ulasan teks untuk mendapatkan hasil analisis sentimen secara langsung.</p>
                 </div>
             </div>
             <textarea id="input-text" class="text-input" rows="5" placeholder="Masukkan teks ulasan di sini..." maxlength="2000"></textarea>
@@ -55,32 +57,8 @@
             </div>
         </div>
 
-        <div class="predict-card glass-card">
-            <div class="card-header">
-                <div class="card-icon">
-                    <i class="fas fa-file-csv"></i>
-                </div>
-                <div>
-                    <h2 class="card-title">Upload Dataset Baru</h2>
-                    <p class="card-desc">Ganti dataset training dengan file CSV baru</p>
-                </div>
-            </div>
-            <div class="upload-area" id="upload-area" onclick="document.getElementById('csv-file').click()">
-                <input type="file" id="csv-file" accept=".csv" class="hidden" onchange="handleFileSelect(this)">
-                <i class="fas fa-cloud-upload-alt upload-icon"></i>
-                <p id="file-name">Klik atau drag file CSV ke sini</p>
-                <p class="upload-hint">Format: Teks Ulasan, Rating, Tanggal</p>
-            </div>
-            <div class="card-footer mt-3">
-                <button class="btn btn-accent btn-full hidden" id="btn-upload" onclick="uploadCSV()">
-                    <i class="fas fa-upload"></i>
-                    <span>Proses Dataset</span>
-                </button>
-            </div>
-        </div>
-
         <!-- Result Section -->
-        <div class="result-section hidden" id="result-section">
+        <div class="result-section hidden" id="result-section" style="margin-top: 2rem;">
             <!-- Sentiment Result Card -->
             <div class="result-card glass-card" id="result-card">
                 <div class="result-header">
@@ -139,7 +117,7 @@
             </div>
 
             <!-- Preprocessing Steps Card -->
-            <div class="preprocessing-card glass-card" id="preprocessing-card">
+            <div class="preprocessing-card glass-card" id="preprocessing-card" style="margin-top: 2rem;">
                 <div class="card-header">
                     <div class="card-icon">
                         <i class="fas fa-layer-group"></i>
@@ -158,6 +136,7 @@
     </div>
 </section>
 
+<!-- Visualisasi Sentimen Pulau Merak (Umum untuk Wisatawan) -->
 <!-- Features Section -->
 <section class="section features-section" id="features-section">
     <div class="container">
@@ -191,8 +170,6 @@
                 <h3>Dashboard</h3>
                 <p>Visualisasi data, metrik performa model, dan insight mendalam tentang hasil klasifikasi</p>
             </div>
-            
-            
         </div>
     </div>
 </section>
