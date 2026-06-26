@@ -126,7 +126,11 @@ def normalize_text(text):
 
 def tokenize(text):
     """Tokenize text into words."""
-    return nltk.word_tokenize(text)
+    try:
+        return nltk.word_tokenize(text)
+    except Exception as e:
+        # Fallback to regex word boundary tokenization if NLTK punkt is missing/not writable
+        return re.findall(r'\b\w+\b', text)
 
 
 def remove_stopwords(tokens):
@@ -135,9 +139,17 @@ def remove_stopwords(tokens):
     return [token for token in tokens if token not in all_stopwords and len(token) > 1]
 
 
+# Global stemming cache to speed up Sastrawi stemming
+STEM_CACHE = {}
+
 def stem_tokens(tokens):
-    """Apply Sastrawi stemmer to each token."""
-    return [stemmer.stem(token) for token in tokens]
+    """Apply Sastrawi stemmer to each token using a cache to avoid redundant processing."""
+    stemmed_tokens = []
+    for token in tokens:
+        if token not in STEM_CACHE:
+            STEM_CACHE[token] = stemmer.stem(token)
+        stemmed_tokens.append(STEM_CACHE[token])
+    return stemmed_tokens
 
 
 def preprocess_text(text):

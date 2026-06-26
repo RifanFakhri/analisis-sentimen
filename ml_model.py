@@ -76,8 +76,22 @@ class SentimentModel:
         np.random.seed(42)
         random.seed(42)
         
-        # Preprocess all texts
-        processed_texts = [preprocess_text(text) for text in texts]
+        # Preprocess all texts and filter empty ones (containing only stopwords/symbols)
+        valid_pairs = []
+        for text, label in zip(texts, labels):
+            proc = preprocess_text(text)
+            if proc.strip():
+                valid_pairs.append((proc, label))
+                
+        if not valid_pairs:
+            raise ValueError(
+                "Semua ulasan kosong atau hanya berisi stopword/simbol setelah proses pembersihan (preprocessing). "
+                "Harap masukkan ulasan yang lebih bermakna (mengandung kata sifat/kata benda)."
+            )
+            
+        processed_texts, labels = zip(*valid_pairs)
+        processed_texts = list(processed_texts)
+        labels = list(labels)
 
         # Split data
         X_train, X_test, y_train, y_test = train_test_split(
@@ -94,9 +108,21 @@ class SentimentModel:
 
         # TF-IDF tuning and vectorization
         self.tfidf_params = self._select_best_tfidf_params(X_train, y_train)
-        self.vectorizer = self._create_vectorizer(self.tfidf_params)
+        self.vectorizer = self._create_vectorizer(self.tfidf_params, n_samples=len(X_train))
 
-        X_train_tfidf = self.vectorizer.fit_transform(X_train)
+        try:
+            X_train_tfidf = self.vectorizer.fit_transform(X_train)
+        except ValueError as e:
+            if "empty vocabulary" in str(e):
+                print("Vocabulary empty with selected params. Falling back to min_df=1 and ngram_range=(1,1)")
+                self.tfidf_params = self.tfidf_params.copy()
+                self.tfidf_params['min_df'] = 1
+                self.tfidf_params['ngram_range'] = (1, 1)
+                self.vectorizer = self._create_vectorizer(self.tfidf_params, n_samples=len(X_train))
+                X_train_tfidf = self.vectorizer.fit_transform(X_train)
+            else:
+                raise e
+
         X_test_tfidf = self.vectorizer.transform(X_test)
 
         # Train Complement Naive Bayes
@@ -200,11 +226,20 @@ class SentimentModel:
             joblib.dump(self.last_metrics, os.path.join(Config.MODEL_DIR, 'metrics.pkl'))
         print(f"Model saved to {Config.MODEL_DIR}")
 
-    def _create_vectorizer(self, params):
+    def _create_vectorizer(self, params, n_samples=None):
+        min_df_val = params.get('min_df', 5)
+        if n_samples is not None:
+            if n_samples < 5:
+                min_df_val = 1
+            elif n_samples < 15:
+                min_df_val = min(min_df_val, 2)
+            else:
+                min_df_val = min(min_df_val, max(1, n_samples // 3))
+
         return TfidfVectorizer(
             max_features=params.get('max_features', 5000),
             ngram_range=params.get('ngram_range', (1, 2)),
-            min_df=params.get('min_df', 5),
+            min_df=min_df_val,
             max_df=params.get('max_df', 0.90),
             sublinear_tf=params.get('sublinear_tf', False),
             smooth_idf=params.get('smooth_idf', True),
@@ -232,17 +267,39 @@ class SentimentModel:
         best_params = self.tfidf_params
 
         for params in candidates:
-            vectorizer = self._create_vectorizer(params)
-            X_search_tfidf = vectorizer.fit_transform(X_search)
-            X_val_tfidf = vectorizer.transform(X_val)
+            try:
+                vectorizer = self._create_vectorizer(params, n_samples=len(X_search))
+                X_search_tfidf = vectorizer.fit_transform(X_search)
+                X_val_tfidf = vectorizer.transform(X_val)
 
-            model = ComplementNB(alpha=self.model.alpha)
-            model.fit(X_search_tfidf, y_search)
-            score = f1_score(y_val, model.predict(X_val_tfidf), average='macro', zero_division=0)
+                model = ComplementNB(alpha=self.model.alpha)
+                model.fit(X_search_tfidf, y_search)
+                score = f1_score(y_val, model.predict(X_val_tfidf), average='macro', zero_division=0)
 
-            if score > best_score:
-                best_score = score
-                best_params = params
+                if score > best_score:
+                    best_score = score
+                    best_params = params
+            except ValueError as e:
+                # If vocabulary becomes empty with min_df=5, fallback to min_df=1
+                if "empty vocabulary" in str(e):
+                    fallback_params = params.copy()
+                    fallback_params['min_df'] = 1
+                    try:
+                        vectorizer = self._create_vectorizer(fallback_params, n_samples=len(X_search))
+                        X_search_tfidf = vectorizer.fit_transform(X_search)
+                        X_val_tfidf = vectorizer.transform(X_val)
+
+                        model = ComplementNB(alpha=self.model.alpha)
+                        model.fit(X_search_tfidf, y_search)
+                        score = f1_score(y_val, model.predict(X_val_tfidf), average='macro', zero_division=0)
+
+                        if score > best_score:
+                            best_score = score
+                            best_params = fallback_params
+                    except ValueError:
+                        continue
+                else:
+                    raise e
 
         print(f"Selected TF-IDF params: {best_params} with macro F1={best_score:.4f}")
         return best_params
