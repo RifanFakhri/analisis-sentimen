@@ -11,10 +11,20 @@ from Sastrawi.Stemmer.StemmerFactory import StemmerFactory
 from Sastrawi.StopWordRemover.StopWordRemoverFactory import StopWordRemoverFactory
 
 # Download NLTK data (only needed once)
+# For serverless environments like Vercel, download to writable /tmp directory
+import os
+tmp_nltk_dir = os.path.join('/tmp', 'nltk_data')
+if tmp_nltk_dir not in nltk.data.path:
+    nltk.data.path.append(tmp_nltk_dir)
+
 try:
     nltk.data.find('tokenizers/punkt')
 except LookupError:
-    nltk.download('punkt', quiet=True)
+    try:
+        os.makedirs(tmp_nltk_dir, exist_ok=True)
+        nltk.download('punkt', download_dir=tmp_nltk_dir, quiet=True)
+    except Exception as download_error:
+        print(f"Warning: Failed to download NLTK punkt to {tmp_nltk_dir}: {download_error}")
 
 # Initialize Sastrawi stemmer and stopword remover
 stemmer_factory = StemmerFactory()
