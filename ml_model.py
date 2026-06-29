@@ -203,7 +203,7 @@ class SentimentModel:
             'processed_text': processed_text
         }
 
-    def predict_batch(self, texts):
+    def predict_batch(self, texts, is_preprocessed=False):
         """
         Predict sentiment for multiple texts in batch.
         Returns list of predictions with probabilities.
@@ -214,8 +214,8 @@ class SentimentModel:
 
         results = []
         for text in texts:
-            # Preprocess
-            processed_text = preprocess_text(text)
+            # Preprocess only if not already preprocessed
+            processed_text = text if is_preprocessed else preprocess_text(text)
 
             # Vectorize
             text_tfidf = self.vectorizer.transform([processed_text])

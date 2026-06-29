@@ -638,8 +638,8 @@ def train_model():
 
         # UNTUK SKRIPSI: Predict semua baris dengan teks ulasan menggunakan trained model
         print("Predicting sentiments for all training data using Naive Bayes...")
-        raw_texts = [d.text for d in training_data]
-        predictions = sentiment_model.predict_batch(raw_texts)
+        processed_texts = [d.processed_text for d in training_data if d.processed_text]
+        predictions = sentiment_model.predict_batch(processed_texts, is_preprocessed=True)
         
         # Update database dengan prediksi NB
         for i, training_entry in enumerate(training_data):
@@ -805,7 +805,7 @@ def upload_dataset():
                         print("=== TRAIN FINISHED ===")
 
                         # Predict and save NB predictions only for rows with text
-                        predictions = sentiment_model.predict_batch(texts)
+                        predictions = sentiment_model.predict_batch(texts, is_preprocessed=True)
                         for i, training_entry in enumerate(training_rows_with_text):
                             pred = predictions[i]
                             training_entry.nb_predicted_label = pred['sentiment']
