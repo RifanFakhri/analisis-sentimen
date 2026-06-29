@@ -641,15 +641,19 @@ def train_model():
         processed_texts = [d.processed_text for d in training_data if d.processed_text]
         predictions = sentiment_model.predict_batch(processed_texts, is_preprocessed=True)
         
-        # Update database dengan prediksi NB
+        # Update database dengan prediksi NB (Bulk Update untuk performa cepat)
+        update_mappings = []
         for i, training_entry in enumerate(training_data):
             prediction = predictions[i]
-            training_entry.nb_predicted_label = prediction['sentiment']
-            training_entry.nb_confidence = prediction['confidence']
-            training_entry.nb_positif_prob = prediction['probabilities'].get('positif', 0)
-            training_entry.nb_negatif_prob = prediction['probabilities'].get('negatif', 0)
-            training_entry.nb_netral_prob = prediction['probabilities'].get('netral', 0)
-        
+            update_mappings.append({
+                'id': training_entry.id,
+                'nb_predicted_label': prediction['sentiment'],
+                'nb_confidence': prediction['confidence'],
+                'nb_positif_prob': prediction['probabilities'].get('positif', 0),
+                'nb_negatif_prob': prediction['probabilities'].get('negatif', 0),
+                'nb_netral_prob': prediction['probabilities'].get('netral', 0)
+            })
+        db.session.bulk_update_mappings(TrainingData, update_mappings)
         db.session.commit()
         print(f"Successfully predicted and saved {len(training_data)} predictions to database.")
 
@@ -804,15 +808,20 @@ def upload_dataset():
                         metrics = sentiment_model.train(texts, labels, is_preprocessed=True)
                         print("=== TRAIN FINISHED ===")
 
-                        # Predict and save NB predictions only for rows with text
+                        # Predict and save NB predictions only for rows with text (Bulk Update)
                         predictions = sentiment_model.predict_batch(texts, is_preprocessed=True)
+                        update_mappings = []
                         for i, training_entry in enumerate(training_rows_with_text):
                             pred = predictions[i]
-                            training_entry.nb_predicted_label = pred['sentiment']
-                            training_entry.nb_confidence = pred['confidence']
-                            training_entry.nb_positif_prob = pred['probabilities'].get('positif', 0)
-                            training_entry.nb_negatif_prob = pred['probabilities'].get('negatif', 0)
-                            training_entry.nb_netral_prob = pred['probabilities'].get('netral', 0)
+                            update_mappings.append({
+                                'id': training_entry.id,
+                                'nb_predicted_label': pred['sentiment'],
+                                'nb_confidence': pred['confidence'],
+                                'nb_positif_prob': pred['probabilities'].get('positif', 0),
+                                'nb_negatif_prob': pred['probabilities'].get('negatif', 0),
+                                'nb_netral_prob': pred['probabilities'].get('netral', 0)
+                            })
+                        db.session.bulk_update_mappings(TrainingData, update_mappings)
                         db.session.commit()
 
                         log = TrainingLog(
