@@ -656,7 +656,7 @@ def train_model():
         # Log training activity
         log = TrainingLog(
             activity_type='training',
-            details=f"Model trained successfully with {len(texts)} samples. Accuracy: {metrics['accuracy']}%. All data predicted with Naive Bayes."
+            details=f"Model trained successfully with {len(processed_texts)} samples. Accuracy: {metrics['accuracy']}%. All data predicted with Naive Bayes."
         )
         db.session.add(log)
         db.session.commit()
