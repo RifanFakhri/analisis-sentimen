@@ -12,14 +12,20 @@ class Config:
     """Base configuration."""
     SECRET_KEY = os.getenv('FLASK_SECRET_KEY', 'dev-secret-key-change-in-production')
     
-    # Database Configuration from separate variables
-    DB_USERNAME = os.getenv('DB_USERNAME', 'postgres')
-    DB_PASSWORD = os.getenv('DB_PASSWORD', 'password')
-    DB_HOST = os.getenv('DB_HOST', 'localhost')
-    DB_PORT = os.getenv('DB_PORT', '5432')
-    DB_NAME = os.getenv('DB_NAME', 'sentimen')
-    
-    SQLALCHEMY_DATABASE_URI = f"postgresql://{DB_USERNAME}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+    # Check if a single full URL is provided (e.g. on Vercel/Supabase/Neon/Render)
+    _db_url = os.getenv('DATABASE_URL')
+    if _db_url:
+        if _db_url.startswith("postgres://"):
+            _db_url = _db_url.replace("postgres://", "postgresql://", 1)
+        SQLALCHEMY_DATABASE_URI = _db_url
+    else:
+        # Database Configuration from separate variables
+        DB_USERNAME = os.getenv('DB_USERNAME', 'postgres')
+        DB_PASSWORD = os.getenv('DB_PASSWORD', 'password')
+        DB_HOST = os.getenv('DB_HOST', 'localhost')
+        DB_PORT = os.getenv('DB_PORT', '5432')
+        DB_NAME = os.getenv('DB_NAME', 'sentimen')
+        SQLALCHEMY_DATABASE_URI = f"postgresql://{DB_USERNAME}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
     
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     DEBUG = os.getenv('FLASK_DEBUG', 'False').lower() in ('true', '1', 'yes')
