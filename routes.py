@@ -12,6 +12,7 @@ from datetime import datetime, timedelta
 import re
 import pandas as pd
 import io
+import traceback
 from functools import wraps
 
 POSITIVE_TERMS = {
@@ -612,8 +613,18 @@ def train_model():
                 'error': 'Data training terlalu sedikit. Minimal 10 data dengan teks ulasan diperlukan.'
             }), 400
 
-        texts = [d.text for d in training_data]
-        labels = [d.label for d in training_data]
+        # Ensure all rows have processed_text populated (e.g. migration fallback)
+        needs_commit = False
+        for d in training_data:
+            if not d.processed_text:
+                d.processed_text = preprocess_text(d.text)
+                db.session.add(d)
+                needs_commit = True
+        if needs_commit:
+            db.session.commit()
+
+        processed_texts = [d.processed_text for d in training_data if d.processed_text]
+        labels = [d.label for d in training_data if d.processed_text]
 
         # Check if we have at least 2 classes
         unique_labels = set(labels)
@@ -622,11 +633,13 @@ def train_model():
                 'error': 'Minimal 2 kelas sentimen diperlukan untuk training.'
             }), 400
 
-        metrics = sentiment_model.train(texts, labels)
+        metrics = sentiment_model.train(processed_texts, labels, is_preprocessed=True)
+        print("=== TRAIN FINISHED ===")
 
         # UNTUK SKRIPSI: Predict semua baris dengan teks ulasan menggunakan trained model
         print("Predicting sentiments for all training data using Naive Bayes...")
-        predictions = sentiment_model.predict_batch(texts)
+        raw_texts = [d.text for d in training_data]
+        predictions = sentiment_model.predict_batch(raw_texts)
         
         # Update database dengan prediksi NB
         for i, training_entry in enumerate(training_data):
@@ -655,7 +668,10 @@ def train_model():
         })
 
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+       print("\n===== TRAIN MODEL ERROR =====")
+    traceback.print_exc()
+    print("=============================\n")
+    return jsonify({'error': str(e)}), 500
 
 
 @main_bp.route('/api/upload-dataset', methods=['POST'])
@@ -741,6 +757,7 @@ def upload_dataset():
 
             training_rows.append(TrainingData(
                 text=text,
+                processed_text=preprocess_text(text),
                 label=label,
                 rating=rating_val,
                 tahun=date_info['year'],
@@ -774,12 +791,18 @@ def upload_dataset():
             training_rows_with_text = TrainingData.query.filter(TrainingData.text != '', TrainingData.text != None).order_by(TrainingData.id).all()
             if len(training_rows_with_text) >= 10:
                 try:
-                    texts = [r.text for r in training_rows_with_text]
-                    labels = [r.label for r in training_rows_with_text]
+                    for r in training_rows_with_text:
+                        if not r.processed_text:
+                            r.processed_text = preprocess_text(r.text)
+                    db.session.commit()
+
+                    texts = [r.processed_text for r in training_rows_with_text if r.processed_text]
+                    labels = [r.label for r in training_rows_with_text if r.processed_text]
 
                     # Ensure at least two classes
                     if len(set(labels)) >= 2:
-                        metrics = sentiment_model.train(texts, labels)
+                        metrics = sentiment_model.train(texts, labels, is_preprocessed=True)
+                        print("=== TRAIN FINISHED ===")
 
                         # Predict and save NB predictions only for rows with text
                         predictions = sentiment_model.predict_batch(texts)
@@ -839,7 +862,7 @@ def add_training_data():
         if label not in ['positif', 'negatif', 'netral']:
             return jsonify({'error': 'Label harus positif, negatif, atau netral.'}), 400
 
-        entry = TrainingData(text=text, label=label)
+        entry = TrainingData(text=text, processed_text=preprocess_text(text), label=label)
         db.session.add(entry)
         db.session.commit()
 
@@ -869,7 +892,7 @@ def add_bulk_training_data():
             text = item.get('text', '').strip()
             label = item.get('label', '').strip().lower()
             if text and label in ['positif', 'negatif', 'netral']:
-                entry = TrainingData(text=text, label=label)
+                entry = TrainingData(text=text, processed_text=preprocess_text(text), label=label)
                 db.session.add(entry)
                 added += 1
 

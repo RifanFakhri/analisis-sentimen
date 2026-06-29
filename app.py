@@ -24,6 +24,8 @@ def ensure_training_data_columns():
     existing_cols = [col['name'] for col in inspector.get_columns('training_data')]
     alterations = []
 
+    if 'processed_text' not in existing_cols:
+        alterations.append('ADD COLUMN processed_text TEXT')
     if 'bulan' not in existing_cols:
         alterations.append('ADD COLUMN bulan INTEGER')
     if 'tanggal_asli' not in existing_cols:

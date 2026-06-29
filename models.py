@@ -47,6 +47,7 @@ class TrainingData(db.Model):
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     text = db.Column(db.Text, nullable=False)
+    processed_text = db.Column(db.Text, nullable=True)
     label = db.Column(db.String(20), nullable=False)  # positif, negatif, netral (dari rating)
     rating = db.Column(db.Integer, nullable=True)
     tahun = db.Column(db.Integer, nullable=True)

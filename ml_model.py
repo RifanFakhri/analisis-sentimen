@@ -66,7 +66,7 @@ class SentimentModel:
         self.is_trained = False
         self.labels = ['negatif', 'netral', 'positif']
 
-    def train(self, texts, labels):
+    def train(self, texts, labels, is_preprocessed=False):
         """
         Train the model on preprocessed texts and their labels.
         Applies random oversampling for minority class (negatif).
@@ -77,12 +77,21 @@ class SentimentModel:
         random.seed(42)
         
         # Preprocess all texts and filter empty ones (containing only stopwords/symbols)
+        print("START PREPROCESS", flush=True)
         valid_pairs = []
-        for text, label in zip(texts, labels):
-            proc = preprocess_text(text)
-            if proc.strip():
-                valid_pairs.append((proc, label))
+        if is_preprocessed:
+            for text, label in zip(texts, labels):
+                if text and text.strip():
+                    valid_pairs.append((text, label))
+        else:
+            for i, (text, label) in enumerate(zip(texts, labels)):
+                if i % 100 == 0:
+                    print(f"Preprocessing {i}/{len(texts)}", flush=True)
+                proc = preprocess_text(text)
+                if proc.strip():
+                    valid_pairs.append((proc, label))
                 
+        print("PREPROCESS DONE", flush=True)
         if not valid_pairs:
             raise ValueError(
                 "Semua ulasan kosong atau hanya berisi stopword/simbol setelah proses pembersihan (preprocessing). "
@@ -94,22 +103,29 @@ class SentimentModel:
         labels = list(labels)
 
         # Split data
+        print("START SPLIT", flush=True)
         X_train, X_test, y_train, y_test = train_test_split(
             processed_texts, labels, test_size=0.2, random_state=42, stratify=labels
         )
+        print("SPLIT DONE", flush=True)
 
         # Apply random oversampling for negative class
+        print("START OVERSAMPLING", flush=True)
         print("\n=== Applying Random Oversampling ===")
         X_train, y_train = random_oversample_negative(X_train, y_train, random_state=42)
+        print("OVERSAMPLING DONE", flush=True)
         print("=" * 35 + "\n")
 
         X_train = np.array(X_train)
         y_train = np.array(y_train)
 
         # TF-IDF tuning and vectorization
+        print("START TFIDF PARAM SEARCH", flush=True)
         self.tfidf_params = self._select_best_tfidf_params(X_train, y_train)
+        print("TFIDF PARAM SEARCH DONE", flush=True)
         self.vectorizer = self._create_vectorizer(self.tfidf_params, n_samples=len(X_train))
 
+        print("START TFIDF FIT", flush=True)
         try:
             X_train_tfidf = self.vectorizer.fit_transform(X_train)
         except ValueError as e:
@@ -122,18 +138,23 @@ class SentimentModel:
                 X_train_tfidf = self.vectorizer.fit_transform(X_train)
             else:
                 raise e
+        print("TFIDF FIT DONE", flush=True)
 
         X_test_tfidf = self.vectorizer.transform(X_test)
 
         # Train Complement Naive Bayes
+        print("START MODEL FIT", flush=True)
         self.model.fit(X_train_tfidf, y_train)
+        print("MODEL FIT DONE", flush=True)
         self.is_trained = True
 
         # Evaluate
+        print("START EVALUATION", flush=True)
         y_pred = self.model.predict(X_test_tfidf)
         accuracy = accuracy_score(y_test, y_pred)
         report = classification_report(y_test, y_pred, output_dict=True, zero_division=0)
         conf_matrix = confusion_matrix(y_test, y_pred, labels=self.labels).tolist()
+        print("EVALUATION DONE", flush=True)
 
         # Save model
         self.last_metrics = {
@@ -144,7 +165,9 @@ class SentimentModel:
             'test_size': len(X_test),
             'labels': self.labels
         }
+        print("START SAVE MODEL", flush=True)
         self.save_model()
+        print("SAVE MODEL DONE", flush=True)
 
         return self.last_metrics
 

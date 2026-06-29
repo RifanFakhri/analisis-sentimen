@@ -141,15 +141,35 @@ def remove_stopwords(tokens):
 
 # Global stemming cache to speed up Sastrawi stemming
 STEM_CACHE = {}
+import time
 
 def stem_tokens(tokens):
-    """Apply Sastrawi stemmer to each token using a cache to avoid redundant processing."""
-    stemmed_tokens = []
-    for token in tokens:
-        if token not in STEM_CACHE:
-            STEM_CACHE[token] = stemmer.stem(token)
-        stemmed_tokens.append(STEM_CACHE[token])
-    return stemmed_tokens
+    """Apply Sastrawi stemmer to all tokens efficiently using batch sentence stemming and cache."""
+    # Get unique uncached tokens to maintain order and uniqueness
+    uncached_tokens = []
+    seen = set()
+    for t in tokens:
+        if t not in STEM_CACHE and t not in seen:
+            uncached_tokens.append(t)
+            seen.add(t)
+            
+    if uncached_tokens:
+        # Stem all uncached tokens at once
+        uncached_str = " ".join(uncached_tokens)
+        stemmed_str = stemmer.stem(uncached_str)
+        stemmed_list = stemmed_str.split()
+        
+        # If count matches, populate cache
+        if len(uncached_tokens) == len(stemmed_list):
+            for orig, stemmed in zip(uncached_tokens, stemmed_list):
+                STEM_CACHE[orig] = stemmed
+        else:
+            # Fallback to word-by-word stemming if count mismatches
+            for token in uncached_tokens:
+                STEM_CACHE[token] = stemmer.stem(token)
+                
+    # Return from cache
+    return [STEM_CACHE[token] for token in tokens]
 
 
 def preprocess_text(text):
@@ -174,14 +194,17 @@ def preprocess_text(text):
     if not text:  # Empty string check
         return ""
     
+    start = time.perf_counter()
     try:
-        text = case_folding(text)
-        text = clean_text(text)
-        text = normalize_text(text)
-        tokens = tokenize(text)
+        text_folded = case_folding(text)
+        text_cleaned = clean_text(text_folded)
+        text_norm = normalize_text(text_cleaned)
+        tokens = tokenize(text_norm)
         tokens = remove_stopwords(tokens)
         tokens = stem_tokens(tokens)
-        return ' '.join(tokens)
+        result = ' '.join(tokens)
+        print(f"Preprocess selesai dalam {time.perf_counter()-start:.3f} detik")
+        return result
     except Exception as e:
         # Log error but return empty string instead of crashing
         print(f"Warning: Error preprocessing text '{text[:50]}...': {str(e)}")
