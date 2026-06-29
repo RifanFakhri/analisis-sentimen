@@ -63,12 +63,12 @@ def create_app():
 
     # Create database tables and apply schema updates if needed
     with app.app_context():
-        db.create_all()
-        ensure_training_data_columns()
-
-        # Seed default users if they don't exist
-        from models import User
         try:
+            db.create_all()
+            ensure_training_data_columns()
+
+            # Seed default users if they don't exist
+            from models import User
             if not User.query.filter_by(username='admin').first():
                 admin = User(username='admin', role='admin')
                 admin.set_password('admin123')
@@ -80,9 +80,8 @@ def create_app():
                 db.session.add(user)
                 print("Seeded default user (user / user123)")
             db.session.commit()
-        except Exception as e:
-            db.session.rollback()
-            print(f"Error seeding default users: {e}")
+        except Exception as db_error:
+            print(f"Warning: Database initialization or connection failed: {db_error}")
 
         # Try to load existing model
         sentiment_model.load_model()
