@@ -13,13 +13,22 @@ from Sastrawi.StopWordRemover.StopWordRemoverFactory import StopWordRemoverFacto
 # Download NLTK data (only needed once)
 # For serverless environments like Vercel, download to writable /tmp directory
 import os
+import shutil
 tmp_nltk_dir = os.path.join('/tmp', 'nltk_data')
 if tmp_nltk_dir not in nltk.data.path:
     nltk.data.path.append(tmp_nltk_dir)
 
 try:
     nltk.data.find('tokenizers/punkt')
-except LookupError:
+except (LookupError, Exception) as err:
+    # If the file is missing or corrupted (e.g., BadZipFile from a partial download),
+    # wipe the /tmp/nltk_data directory and re-download fresh
+    print(f"NLTK punkt lookup failed or file corrupted: {err}. Cleaning cache and redownloading...")
+    if os.path.exists(tmp_nltk_dir):
+        try:
+            shutil.rmtree(tmp_nltk_dir)
+        except Exception as clean_err:
+            print(f"Warning: Could not clear directory {tmp_nltk_dir}: {clean_err}")
     try:
         os.makedirs(tmp_nltk_dir, exist_ok=True)
         nltk.download('punkt', download_dir=tmp_nltk_dir, quiet=True)
